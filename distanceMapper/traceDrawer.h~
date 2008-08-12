@@ -1,0 +1,22 @@
+#ifndef TRACEDRAWER_H
+#define TRACEDRAWER_H
+
+#include "../dataStructs.h"
+#include <qwidget.h>
+#include <vector>
+
+class TraceDrawer : public QWidget
+{
+  Q_OBJECT
+    public :
+    PointDrawer(vector<tracePoint> pts, QWidget* parent=0, const char* name=0);
+  ~PointDrawer();
+
+  private :
+    void paintEvent(QPaintEvent* e);
+  
+  vector<tracePoint> pts;
+  // and leave it at that.. 
+};
+
+#endif

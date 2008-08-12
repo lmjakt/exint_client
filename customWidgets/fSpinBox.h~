@@ -1,0 +1,20 @@
+#ifndef FSPINBOX_H
+#define FSPINBOX_H
+
+#include <qspinbox.h>
+#include <qstring.h>
+
+class FSpinBox : public QSpinBox
+{
+  Q_OBJECT
+
+    public :
+    FSpinBox(float min, float max, int stepNo, QWidget* parent=0, const char* name=0);
+  // don't define the destructor,, but use the inherited one..
+
+  protected :
+    QString mapValueToText(int v);
+  int mapTextToValue(bool* ok);
+};
+
+#endif

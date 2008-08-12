@@ -1,0 +1,35 @@
+#include "regionListItem.h"
+#include <qlistview.h>
+#include "../client.h"
+#include <qstring.h>
+
+using namespace std;
+
+RegionListItem::RegionListItem(chromRegion* cr, int i, QListView* parent) :
+  QListViewItem(parent)
+{
+  region = cr;
+  number = i;
+  rtid = 234579;
+  QString label;
+  label = "Chromosome ";
+  label.append(cr->chromosome.c_str());
+  setText(0, label);
+  // how about number of matches ??? or what can we do.. 
+  label.sprintf("(%d matches)", cr->pMatches.size()); 
+  setText(1, label);  // should be OK.. 
+}
+
+int RegionListItem::compare(QListViewItem* i, int col, bool ascending) const {
+  if(i->rtti() != rtid){
+    return(0);
+  }
+  RegionListItem* it = (RegionListItem*)i;
+  if(it->no() < number){
+    return(1);
+  }
+  if(it->no() == number){
+    return(0);
+  }
+  return(-1);
+}

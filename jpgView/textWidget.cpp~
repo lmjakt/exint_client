@@ -1,0 +1,63 @@
+#include "textWidget.h"
+#include <qwidget.h>
+#include <qpushbutton.h>
+#include <qtextedit.h>
+#include <qlabel.h>
+#include <qlayout.h>
+#include <qsizepolicy.h>
+#include <qstring.h>
+#include <iostream>
+
+using namespace std;
+
+TextWidget::TextWidget(ish_annotation data,  string fName, bool isReadOnly, QWidget* parent, const char* name)
+  : QWidget(parent, name)
+{
+  setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred); 
+  currentAnnotation = data;
+  fieldName = fName;
+  textArea = new QTextEdit(this, "textArea");
+  textArea->setText(data.annotation.c_str());
+  textArea->setReadOnly(isReadOnly);
+  
+  int labelIndent = 5;
+  userLabel = new QLabel(data.userName.c_str(), this, "userLabel");
+  fieldLabel = new QLabel(fieldName.c_str(), this, "fieldLabel");   // ugly, I should change the ish_annotation struct.. 
+  userLabel->setPaletteBackgroundColor(QColor(255, 255, 255));
+  fieldLabel->setPaletteBackgroundColor(QColor(255, 255, 255));
+  userLabel->setIndent(labelIndent);
+  fieldLabel->setIndent(labelIndent);
+  
+  updateButton = new QPushButton("Update", this, "updateButton");
+  updateButton->setDisabled(true);
+  connect(textArea, SIGNAL(modificationChanged(bool)), updateButton, SLOT(setEnabled(bool)) );      
+  connect(updateButton, SIGNAL(clicked()), this, SLOT(updateAnnotation()) );
+
+  // ok all we really need now is a reasonably layout..
+  QGridLayout* grid = new QGridLayout(this, 2, 3, 0);
+  grid->addMultiCellWidget(textArea, 0, 0, 0, 2);
+  grid->addWidget(userLabel, 1, 0);
+  grid->addWidget(fieldLabel, 1, 1);
+  grid->addWidget(updateButton, 1, 2);
+}
+
+void TextWidget::setData(ish_annotation data, string fName, bool isReadOnly){
+  textArea->setText(data.annotation.c_str());
+  textArea->setReadOnly(isReadOnly);
+  userLabel->setText(data.userName.c_str());
+  fieldLabel->setText(fName.c_str());
+  updateButton->setDisabled(true);
+  // and that's it..
+  cout << "the sizehint of the text area is : " << textArea->sizeHint().width() << " x " << textArea->sizeHint().height() << endl;
+  
+}
+
+void TextWidget::updateAnnotation(){
+  // should only be called if a modification has been made.. 
+  emit updateData(fieldName, ish_annotation(currentAnnotation.userId, currentAnnotation.userName, textArea->text().latin1()));
+  updateButton->setDisabled(true);
+}
+
+QSize TextWidget::sizeHint() const {
+  return(QSize(125, 75));
+}

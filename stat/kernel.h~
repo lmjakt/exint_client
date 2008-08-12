@@ -1,0 +1,19 @@
+#ifndef KERNEL_H
+#define KERNEL_H
+
+#include <vector>
+
+// an object that has some kernel functions of different sorts.
+
+class kernel {
+  public :
+    kernel(){}
+  ~kernel(){}
+
+  // and some functions that can be called
+  float radial(float base, float sigma, float distance);    // if the distance is known
+  float radial(float base, float sigma, float* a, float* b, int n);  // for two vectors a and b of length n;
+  float radial(float base, float sigma, std::vector<float> a, std::vector<float> b);  // using vectors..
+};
+
+#endif

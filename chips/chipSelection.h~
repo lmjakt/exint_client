@@ -1,0 +1,25 @@
+#ifndef CHIPSELECTION_H
+#define CHIPSELECTION_H
+
+#include <qobject.h>
+#include "../dataStructs.h"
+
+class ChipSelection : public QObject
+{
+  Q_OBJECT
+
+    public :
+    ChipSelection();      // set things later on..
+  ~ChipSelection();
+  
+  void setChipInfo(map<int, chipInfo> info);
+  void toggleChip(int n);   // toggle a chip with identifier n..
+
+  signals :
+    void toggleButtons(map<int, bool>);  // go through and set the buttons for the things..
+  
+  private :
+    map<int, chipInfo> chips;    // maybe that's all I need.
+};
+
+#endif

@@ -1,0 +1,32 @@
+#ifndef CHIPCHOOSER_H
+#define CHIPCHOOSER_H
+
+#include "chipSelection.h"
+#include <qwidget.h>
+#include <qlayout.h>
+#include <qpushbutton.h>
+#include <map>
+
+class ChipChooser : public QWidget
+{
+  Q_OBJECT
+    
+    public :
+    ChipChooser(ChipSelection* sel, QWidget* parent=0, const char* name=0);
+  ~ChipChooser(){
+    // but do nothing.
+  }
+  
+  void toggleButtons(std::map<int, bool> info);    // changes the appearance of the buttons..
+  void newChipInfo(std::map<int, bool> info);      // sets up the buttons, and sets the appearance appropriately.. 
+
+  private :
+
+    void buttonPressed();      // work out which button, and call the appropriate function in the ChipSelection.. 
+  ChipSelection* selection;
+  std::map<QPushButton*, int> buttons;
+  QHBoxLayout* hbox;
+};
+
+
+#endif

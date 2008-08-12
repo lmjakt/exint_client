@@ -1,0 +1,44 @@
+#include "kernelFunction.h"
+#include <math.h>
+#include <vector>
+
+using namespace std;
+
+// constructor has already been defined, as this object doesn't yet have any state
+// we don't need to worry too much about it.. -- we should perhaps have made it a 
+// functor, but am trying to avoid using new and delete too much..
+
+double kernelFunction::radial(double sigma, double distance){  // distance is the square of the distance, .. -- as this anyway will be calculated.
+  return( exp(-(distance) / (2 * (sigma * sigma))) );
+}
+
+double kernelFunction::radial(double base, double sigma, double distance){
+  return( pow(base, -(distance*distance) / (2 * (sigma * sigma)) ) );
+}
+
+double kernelFunction::radial(double sigma, double* a, double* b, int n){
+  double d = 0;
+  // d is the euclidean distance..
+  for(int i=0; i < n; i++){
+    d += ((a[i] - b[i])*(a[i] - b[i]));    // this looks ugly, but I find it to be much faster than calling pow or something..
+  }
+  // since we are going to use the square of the ed, we don't need to square root it to get the E.D.
+  return(exp(- d / (2 * (sigma * sigma))) );
+}
+
+double kernelFunction::radial(double sigma, vector<double> a, vector<double> b){
+  double d = 0;
+  if(a.size() != b.size()){
+    cerr << "kernelFunction function, vectors are of different size .. returning 0 .. " << endl;
+    return(0);
+  }
+  for(int i=0; i < a.size(); i++){
+    d += ((a[i] - b[i])*(a[i] - b[i]));
+  }
+  return(exp(- d / (2 * (sigma * sigma))) );
+}
+
+// if we want more functions, we can put them in later..  
+  
+  
+	   

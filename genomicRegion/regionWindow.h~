@@ -1,0 +1,54 @@
+#ifndef REGIONWINDOW_H
+#define REGIONWINDOW_H
+
+#include "../client.h"
+#include "regionWidget.h"
+#include <qwidget.h>
+#include <qlistview.h>
+#include <qlineedit.h>
+#include <qspinbox.h>
+#include <qvalidator.h>
+#include <string>
+#include <set>
+#include <vector>
+
+using namespace std;
+
+class RegionWindow : public QWidget
+{
+  Q_OBJECT
+    public :
+    RegionWindow(set<chromRegion*>* cr, QWidget* parent=0, const char* name=0);
+  
+  private :
+    set<chromRegion*>* regions;
+  QListView* regionList;
+  QLineEdit* chromLine;   // for choosing a chromosome..
+  RegionWidget* regionWidget;
+
+  QSpinBox* maxExpect;
+  QSpinBox* minAllength;
+  QSpinBox* minMatch;   // as a real number
+
+  QSpinBox* selectStart;
+  QSpinBox* selectEnd;
+  //QIntValidator* startValidator;
+  //QIntValidator* endValidator;
+
+  private slots :
+    void getChromosome();    // no range for the moment, just get it..
+  void selectionChanged(QListViewItem* item);
+  void selectRegionChanged(int cs, int ce, int ss, int se);
+  void changingRegion(int i);
+
+  public slots :
+    void receiveChromosome(chromRegion* cr);
+  void updateWidget();
+
+  signals :
+    void getRegion(string chromosome, int start, int end);
+  void pleaseLoadGenes(vector<int>, QString);
+  void pleaseGetEnsemblGenes(int, string, int, int);
+};
+
+#endif

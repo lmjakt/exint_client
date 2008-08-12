@@ -1,0 +1,36 @@
+#ifndef GENALIGNVIEW_H
+#define GENALIGNVIEW_H
+
+#include "GenAlignWidget.h"
+#include "../probe_set/probe_set.h"
+#include <qwidget.h>
+#include <qscrollview.h>
+#include <qframe.h>       // need to access during the resize event. maybe. 
+
+class GenAlignView : public QWidget
+{
+  Q_OBJECT
+
+    public :
+    GenAlignView(QWidget* parent=0, const char* name = 0);
+
+  void setData(probe_data* data);
+
+  private :
+    GenAlignWidget* alignWidget;
+  QScrollView* scroll;
+  QFrame* frame;
+  int lastX;
+  int lastY;   // for mouse movement. 
+
+  private slots :
+    //void mousePress(QMouseEvent* e);
+    //void mouseMove(QMouseEvent* e);
+    void moveMe(int x, int y);
+
+
+  protected :
+    virtual void resizeEvent(QResizeEvent* e);
+};
+
+#endif

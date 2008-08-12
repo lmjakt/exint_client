@@ -1,0 +1,10 @@
+#include "ishAnnotationErrorMessage.h"
+#include "ishFloatEntry.h"
+#include "ishTextEntry.h"
+#include "../dataStructs.h"
+#include <qdialog.h>
+#include <qstring.h>
+
+using namespace std;    /// though I think I probably don't need this..
+
+IshAnnotationErrorMessage(

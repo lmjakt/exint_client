@@ -1,0 +1,105 @@
+#ifndef IMAGEADDER_H
+#define IMAGEADDER_H
+
+#include <qwidget.h>
+#include "../dataStructs.h"
+#include "jpgView.h"
+#include <vector>
+#include <qlistview.h>
+#include <qtextview.h>
+#include <qlabel.h>
+#include <qcombobox.h>
+#include <qpopupmenu.h>
+#include <map>
+#include <qlineedit.h>
+#include <qpushbutton.h>
+
+
+using namespace std;
+
+class FieldCreator : public QWidget
+{
+  Q_OBJECT
+    public :
+    FieldCreator(QWidget* parent=0, const char* name=0);
+  
+  public slots :
+  void createTissue();  // a string and a float.. 
+  void createField();
+
+  private :
+    QLineEdit* tissueLine;
+  QLineEdit* ageLine;
+  QLabel* ageLabel;
+  QLabel* fieldLabel;
+  QPushButton* createButton;
+
+
+  private slots :
+  void create();
+  void cancel();
+
+  signals :
+    void makeTissue(QString, float);
+  void makeField(QString);
+};
+
+
+class ImageAdder : public QWidget
+{
+  Q_OBJECT
+    
+    public :
+    ImageAdder(QWidget* parent=0, const char* name=0);
+
+  public slots :
+    
+  void addImages(ishProbeData data);
+  void setTissues(vector<tissue> t);
+  void setIshAnnotationFields(vector<ishAnnotationField> fields);
+  void setExperiment(Experiment exp);
+  
+  private slots :
+    void selectFiles();
+  void popMenu(QListViewItem* item, const QPoint& p, int i);
+  void removeFile();
+  void selectionChanged(QListViewItem* item);
+  void commitToDB();
+  
+  private :
+    ishProbeData currentProbe;
+  vector<tissue> tissues;
+  vector<ishAnnotationField> annotationFields;
+  Experiment currentExperiment;
+
+  // something for viewing the details of the above..
+  QTextView* exptView;
+  QTextView* probeView;
+  QTextView* commentArea;
+  
+  QComboBox* tissueChooser;
+  QComboBox* fieldChooser;
+  QComboBox* promoterChooser;    // we have to sort this one out at some stage.. such that we get the relevant information from the probe information.. later though.
+  /// its kind of ugly, but we need to be able to map between the tissueChooser and the index,, -best way is to subclass the QListViewItem, but seems to much trouble.
+  map<int, int> tissueMap;
+  map<int, int> fieldMap;
+
+  // something to view the file list in ..
+  QListView* fileView;
+  //map<QListViewItem*, QString> filenames;     // so it would be cleaner to inherit the listview item.. abut.. argh.. 
+  // something to view the picture in..
+  JpgView* imageViewer;
+
+  QPopupMenu* fileMenu;
+  QPopupMenu* fSelectMenu;   // if selecting a file.. bugger should have used different naming.. 
+
+  signals :
+    void updateTissues();
+  void updateFields();
+  void getExperiment();        /// ask the parent to show the experimentBrowser... so that we can have a look at it.. 
+  void makeField(QString);
+  void makeTissue(QString, float);
+  void commitImageToDB(ishImageSet);
+};
+
+#endif

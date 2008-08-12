@@ -1,0 +1,69 @@
+#ifndef TWODPLOT_H
+#define TWODPLOT_H
+
+#include "../dataStructs.h"  // for PointCorrdinate  -- so that I can set something.. 
+#include <qwidget.h>
+#include <qpixmap.h>
+#include <qcolor.h>
+#include <vector>
+#include <map>
+
+// first a struct for holding 2d positions..  -- derived from the vector of PointCoordinates (which can be n-dimensional..)
+
+struct twoDPos {
+  int x;
+  int y;
+  float fx;
+  float fy;
+  std::vector<QColor> colors;
+  bool marked;
+  twoDPos(){
+    x = y = 0;
+    fx = fy = 0;
+    marked = false;
+  }
+  twoDPos(float xv, float yv){      // 
+    x = y = 0;                    // let the user set these as it's dependent on size of the thingy and other stuff. 
+    fx = xv;
+    fy = yv;
+    marked = false;
+  }
+};
+
+class TwoDPlot : public QWidget
+{
+  Q_OBJECT
+
+    public :
+    TwoDPlot(QWidget* parent=0, const char* name=0);
+
+  public slots:
+    void plot(std::vector<std::vector<float> >& v, std::vector<int>& exIndex, std::vector<int>& marks);
+  void plot();     // replot without new values. Mostly if we have a new size. Wasteful if lots of window movement, but this i not likely to be the main thing..
+  void setCoordinates(std::vector<PointCoordinate> pc);
+  
+  private :
+  std::map<int, twoDPos> pos;                // all positions..
+  std::vector<std::vector<float> > values;
+  std::vector<int> exptIndex;
+  std::vector<int> markedOnes;      // if we want to update positions -- we need to remember these.. 
+
+  // and some other data that we need
+  float maxV;                            // the maxValue
+  float minV;
+  float maxX, minX, minY, maxY;                      // max X and Y coordinates in the set of coordinates, -so that I can work out how to scale things when drawing.
+  int probeNo;                                       // use this to get an idea of how to draw things.. 
+
+  QPixmap* pixmap;          // the actual drawing, so that I can easily do copy and paste and save as something else.. 
+
+  void paintEvent(QPaintEvent* e);       // well the painting has to be done somewhere.. eh.. (just use the pixmap..)
+  void adjustPositions();               // adjust the positions in the appropriate manner.. 
+  
+  protected :
+    void resizeEvent(QResizeEvent* e);
+
+};
+
+
+
+#endif

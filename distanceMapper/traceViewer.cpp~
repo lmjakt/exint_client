@@ -1,0 +1,34 @@
+#include "traceViewer.h"
+#include <qpushbutton.h>
+#include <qlayout.h>
+#include <iostream>
+
+using namespace std;
+
+TraceViewer::TraceViewer(std::vector<tracePoint> pts, QWidget* parent, const char* name)
+  : QWidget(parent, name)
+{
+  QPushButton* showButton = new QPushButton("Show", this, "showButton");
+  QPushButton* deleteButton = new QPushButton("Delete", this, "deleteButton");
+
+  connect(showButton, SIGNAL(clicked()), this, SLOT(showDrawing()) );
+  connect(deleteButton, SIGNAL(clicked()), this, SIGNAL(deleteMe()) );
+
+  QHBoxLayout* vbox = new QHBoxLayout(this);
+  vbox->addWidget(deleteButton);
+  vbox->addWidget(showButton);
+
+  drawer = new TraceDrawer(pts);
+  drawer->show();
+}
+
+TraceViewer::~TraceViewer(){
+  delete drawer;
+}
+
+void TraceViewer::showDrawing(){
+  drawing->raise();
+  drawing->show();
+}
+
+

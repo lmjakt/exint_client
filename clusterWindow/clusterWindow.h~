@@ -1,0 +1,47 @@
+#ifndef CLUSTERWINDOW_H
+#define CLUSTERWINDOW_H
+
+#include "../smallToggle/smallToggle.h"
+#include "../client.h"
+#include "../meanPlotWindow/meanExpressionPlotter.h"
+#include "clusterPlotter.h"
+#include <qwidget.h>
+#include <qspinbox.h>
+#include <qlistview.h>
+#include <set>
+#include <vector>
+
+using namespace std;
+
+class ClusterWindow: public QWidget
+{
+  Q_OBJECT
+  public :
+    ClusterWindow(set<clusterSet*>* cs, QWidget* parent=0, const char* name=0);
+
+  private :
+    set<clusterSet*>* clusterSets;      // clusterSets, owned by client object. don't modify, but read and use data to plot OK.. 
+
+    SmallToggle* localNorm;
+  SmallToggle* individualNorm;
+  SmallToggle* meanNorm;
+  QListView* clusterList;               // if clusters have been made, this contains the a cluster with stuff. 
+  //MeanExpressionPlotter* meanPlotter;
+  ClusterPlotter* meanPlotter;
+
+  QSpinBox* clusterNumber;
+
+  private slots :
+    void startClustering();
+  void clusterSelectionChanged(QListViewItem* item);
+
+  public slots : 
+    void newClusterSet(clusterSet*);
+
+  signals :
+    void doCluster(int, bool, bool, bool);      // k, localNorm, Individual Norm, Mean Norm 
+  void pleaseLoadTheseGenes(vector<int>);
+};
+
+#endif
+

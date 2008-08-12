@@ -1,0 +1,7 @@
+when haveing the exception handling not implemented thing on windows,,
+just remove something from the CFLAGS and the CXXFLAGS in the Makefile..
+
+something like -x -RT  
+
+which I don't know what it means..
+

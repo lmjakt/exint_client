@@ -1,0 +1,107 @@
+#include "bytevec.h"
+#include <vector>
+#include <string>
+#include <string.h>
+#include <qt.h>      // for Q_INT32 I suppose..?? do with proper functions later
+
+using namespace std;
+
+ByteVec::ByteVec(){
+  data.resize(0);    
+  data.reserve(1000); // complete guess. Not good.
+  currentPosition = 0;
+}
+
+ByteVec::ByteVec(int inSize){
+  data.resize(0);
+  data.reserve(inSize);
+  currentPosition = 0;
+}
+
+void ByteVec::init(){
+  data.resize(0);
+  currentPosition = 0;       // Do not change the reserve status keep our block of memory!
+}
+
+int ByteVec::size(){
+  return(data.size());
+}
+
+void ByteVec::reStart(){
+  currentPosition = 0;       // for restarting the reading from the beginning..
+}
+
+void ByteVec::app(char c){
+  data.push_back(c);         // that's all, the vector will handle the details..!!
+}
+
+char* ByteVec::readFourBytes(){
+  char c[4];
+  memset((void*)&c, 0, 4);   // scary.. 
+    // as error checking sucks.. 
+  if(currentPosition > data.size()-4) {
+    // can't read, return 0 .. ?? 
+    cerr << "read currentPosition too large.. CIRCULAR RESET PROBABLY DANGEROUS" << endl;
+    reStart();
+    if(data.size() < 4){
+      cerr << "Nothing in data,, bugger" << endl;
+      return((char*)&c);
+    }
+    currentPosition = 0;
+  }
+  for(int i=0; i < 4; i++){
+    c[i] = data[currentPosition];
+    currentPosition++;
+  }
+  return((char*)&c);
+}
+
+int ByteVec::i(){
+  char* c = readFourBytes();
+  int value = *(int*)(c);     /// whoaaah. loooks dodgy. should be OK, but is dependent on how vector stores data. 
+  //  for(int i=0; i < 4; i++){ delete &c[i]; }
+  //  delete []c;
+  return(value);
+}
+
+int ByteVec::qi(){
+  char* c = readFourBytes();
+  Q_INT32 value = *(Q_INT32*)c;
+  //for(int i=0; i < 4; i++) { delete &c[i]; }
+  //  delete []c;
+  return(value);
+}
+
+float ByteVec::f(){
+  char* c = readFourBytes();
+  float f = *(float*)c;
+  //for(int i=0; i < 4; i++) { delete &c[i]; }
+  return(f);
+}
+
+string ByteVec::s(){
+  int length = qi();
+  string word;
+  if(length < 1){
+    return(word);
+  }
+  if(currentPosition + length > data.size()){
+    word = "ERROR string length out of bounds";
+    cerr << "ERROR, string length out of bounds" << endl;
+    return(word);   // its just wrong forget it man..
+  }
+  for(int i=0; i < length; i++){
+    word += data[currentPosition];
+    currentPosition++;  // which could be put in the same line, but I feel its more clear this way.
+  }
+  return(word);
+}
+
+bool ByteVec::b(){
+  bool ok = (bool)data[currentPosition];
+  currentPosition++;
+  return(ok);
+}
+    
+
+

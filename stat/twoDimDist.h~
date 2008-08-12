@@ -1,0 +1,80 @@
+#ifndef TWODIMDIST_H
+#define TWODIMDIST_H
+
+#include "kernelFunction.h"
+#include <qthread.h>
+#include <qmutex.h>
+#include <vector>
+
+// a minimal mapping function that makes a 2 dimensional grid distribution
+// graph using a radial kernel function to even out the graph.. 
+
+struct distMap {
+  int on;
+  int in;   // outer and inner n, -- keep the same here, but in case we want to have non square plots.. 
+  double** values;
+  std::vector<int> index;
+  std::vector<double> a;
+  std::vector<double> b;   // a --> x  and b --> y .. well, a --> outer loop, b --> inner loop
+  //double** dist;
+  double minX, maxX, minY, maxY, maxDistValue, minDistValue;  // 
+  distMap(int o, int i, double** v, double max, double mix, double may, double miy, double mdv, double mindv, int* ind, double* av, double* bv, int n){
+    on = o;
+    in = i;
+    values = v;
+    maxX = max;
+    minX = mix;
+    maxY = may;
+    minY = miy;
+    maxDistValue = mdv;
+    minDistValue = mindv;
+    a.resize(n);
+    b.resize(n);
+    index.resize(n);
+    for(int i=0; i < n; i++){
+      a[i] = av[i];
+      b[i] = bv[i];
+      index[i] = ind[i];
+    }
+  }
+  ~distMap(){
+    for(int i=0; i < on; i++){
+      delete []values[i];
+    }
+    delete []values;
+  }
+};
+
+class TwoDimDist : public QThread
+{
+
+  public :
+    TwoDimDist(double* av, double* bv, int nv, int* indx, QMutex* mutx, int* prog, int sig, int nb=100);
+  // basically, two arrays of floats, an int telling the number of members, 
+  // a qmutex that is used to update the progress int (0-100) telling the parent of the 
+  // the progress.. And number of buckets defaulting to a 100.
+  ~TwoDimDist();              // Delete a and b, but nothing else.
+  distMap* distribution();     // return the distribution 
+
+  protected :
+    void run();
+
+  private :
+    double* a;
+  double* b;
+  int* index;
+  int n;
+  QMutex* mutex;
+  int* progress;
+  int bn;   // bucket number  -- just do square maps for now.. 
+  double** dist;
+
+  double sigma;   // parameter for the kernel function.. 
+  kernelFunction kf;   // set up before we enter a new thread. 
+
+  double maxX, minX, maxY, minY, maxDist, minDist;  // important distribution parameters.. 
+
+};
+
+#endif
+

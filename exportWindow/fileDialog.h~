@@ -1,0 +1,19 @@
+#ifndef FILEDIALOG_H
+#define FILEDIALOG_H
+
+#include <qfiledialog.h>
+
+class FileDialog : public QFileDialog
+{
+    Q_OBJECT
+	FileDialog(QWidget* parent=0, const char* name=0);
+
+    protected :
+
+	void accept();
+    void reject();
+    void done();
+
+};
+
+#endif

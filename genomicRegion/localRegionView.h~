@@ -1,0 +1,65 @@
+#ifndef LOCALREGIONVIEW_H
+#define LOCALREGIONVIEW_H
+
+#include "localRegionWidget.h"
+#include "../client.h"
+#include "../sequence/sequenceRequest.h"
+#include <qwidget.h>
+#include <qscrollview.h>
+#include <qspinbox.h>
+#include <qtextview.h>
+#include <qtextbrowser.h>
+#include <vector>
+
+class LocalRegionView : public QWidget 
+{
+  Q_OBJECT
+
+    public :
+    LocalRegionView(vector<chromRegion>* r, QWidget* parent=0, const char* name=0, bool isIshish=false);
+  ~LocalRegionView(){
+    delete helpView;
+  }
+  
+  public slots :
+    void newData(int i, int g);
+  void setPSet(int p);     // set the probe set association thingy.. 
+  
+  private :
+    LocalRegionWidget* alignment;         // for a specific probe set
+  //LocalRegionWidget* regionAlignmnet;     // for a specific genomic region.. -It's a little more complicated.. 
+  QScrollView* scroll;
+  QSpinBox* regionSize;
+  QSpinBox* windowSize;
+  QSpinBox* maxExpect;
+  QSpinBox* minAlLength;
+  QSpinBox* minMatch;   // % as it makes more sense.. 
+
+  QTextView* dataTable;
+  QTextBrowser* helpView;
+  vector<chromRegion>* regions;
+  vector<string> fieldNames;
+  
+  private slots :
+    void regionSizeChanged(int i);
+  void setData(int g);
+  void displayTranscriptInfo(string source, string id);
+  void setHelp();
+
+  signals :
+    void newRegionSize(int);
+  void loadProbeSetsPlease(vector<int>, QString);
+  void collectSequences(SequenceRequest*);
+  void pleaseLoadImages(int);
+  void pleaseLoadThumbnails(int);
+  void associateIshProbeWithGene(int);
+  void addImagesFor(int);
+
+  protected :
+    virtual void resizeEvent(QResizeEvent* e);
+  
+};
+
+#endif
+
+  

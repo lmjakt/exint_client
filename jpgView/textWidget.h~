@@ -1,0 +1,41 @@
+#ifndef TEXTWIDGET_H
+#define TEXTWIDGET_H
+
+#include <qwidget.h>
+#include <qtextedit.h>
+#include "../dataStructs.h"
+#include <qpushbutton.h>
+#include <qlabel.h>
+#include <string>
+
+using namespace std;
+
+class TextWidget : public QWidget {
+  Q_OBJECT
+
+    public :
+    //TextWidget(QWidget* parent=0, const char* name=0);    // if I want to modify this one so that I can use it for data entry.. it's logical
+  TextWidget(ish_annotation data, string fName, bool isReadOnly, QWidget* parent=0, const char* name=0);
+  
+  void setData(ish_annotation data, string fName, bool isReadOnly);      // set the data of present ones.. 
+  QSize sizeHint() const;
+
+  private slots :
+    //void dataChanged();
+  void updateAnnotation();
+
+  signals :
+    void updateData(string, ish_annotation);    // construct a new ish_annotation and ask for it to be updated..
+
+  private :
+    QPushButton* updateButton;          // so I can disable and enable it.. 
+  ish_annotation currentAnnotation;     // so it is possible to do things..
+  QTextEdit* textArea; 
+  string fieldName;
+  QLabel* userLabel;
+  QLabel* fieldLabel;
+};
+
+#endif
+
+    

@@ -1,0 +1,77 @@
+#ifndef IMAGEVIEWER_H
+#define IMAGEVIEWER_H
+
+#include "thumbView.h"
+#include <qwidget.h>
+#include <qrect.h>
+#include <qlabel.h>
+#include <qstring.h>
+#include <qcolor.h>
+#include <map>
+#include <set>
+#include "../dataStructs.h"
+#include "qpoint.h"
+
+using namespace std;
+
+struct labelRect {
+  QRect rect;
+  QLabel* label;
+  labelRect(){
+    label = 0;
+  }
+  labelRect(QRect r, QLabel* l){
+    rect = r;
+    label = l;
+  }
+  //  ~labelRect();
+};
+
+class ImageViewer : public QWidget
+{
+  Q_OBJECT
+    public :
+    ImageViewer(QWidget* parent=0, const char* name=0);
+  QSize sizeHint() const;
+  QSize goodSize(QSize avSpace);    // given the available space, what size would you like to be?? ?? 
+
+  public slots :
+    void addImage(ishImageData data, QString label);    // data that we can construct a jpgView from.. always assuming Jpgs here.. that's bad..
+  void addFullImage(ishImageData data);     // a full sized image.. make top level thingy.. or something.. not sure how to destroy it though.. 
+  void setLabel(int index, QString labelText);  // set the label of images using a specific probe.. or something like that.. 
+  void selectedChanged(int index);              // when the information display changes probe or something.. 
+
+  private slots :
+    void getFullImage(int imageIndex);          // catch the signal from the thumbview, and check if we already have it.. otherwise send signal
+    void removeImages(int);         // signal from itself.. but how to find it.. hmm. could keep an index, but implement that later .. 
+    void removeImage(int);          // just remove the full sized image.. 
+  void resizeEvent(QResizeEvent* e);
+  void moveWidget(int dx, int dy);     
+
+  void mousePressEvent(QMouseEvent* e);
+  void mouseMoveEvent(QMouseEvent* e);
+  void mouseReleaseEvent(QMouseEvent* e);
+  //void paintEvent(QPaintEvent* e);
+ 
+  private :
+    multimap<int, ThumbView*> images;  // the int is the ishprobe index, and the view. the image..
+  map<ThumbView*, labelRect> imageHandles; // some handles for moving the rects with, perhaps.. 
+  //map<ThumbView*, QLabel*> imageLabels; // a label,, unfortunately we will have to rely on the parent for part of the text as we should not keep probe data here.
+  map<int, ThumbView*> fullImages;            // just full images..   -- obviously shouldnt' be a thumbview, but fix it later.. with a derived class.  -- the int is the identifier (row not the actual oid) for the image.. -so we know if we've got it or not..  
+  
+  int pressX, pressY;                // initial mouse press position..
+  int lastX, lastY;                  // last positions.. 
+  int w, h, vmargin, hmargin;        // set up in constructor..  -- width's and heights of the thumbnails.. 
+  QPoint lastPoint;                  // hmm, maybe that is a bit redundant.. but.. 
+  ThumbView* movingImage;              // 0 if not moving, then we can use it as a boolean as well.. 
+  QSize wantSize;                      // size I want to be.. 
+  int currentSelection;               // the currently selecte ishProbe.. i.e. when we click the thingy.. 
+  QColor selectedColor;
+  QColor normalColor;
+
+  signals :
+    void getImage(int);   // get's full sized image.. -- 
+  void whoIsThis(int);
+};
+
+#endif

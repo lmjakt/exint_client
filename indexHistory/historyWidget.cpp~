@@ -1,0 +1,28 @@
+#include "historyWidget.h"
+
+using namespace std;
+
+HistoryWidget::HistoryWidget(deque<IndexWidget>* islist, QWidget* parent, const char* name)
+  : QWidget(parent, name)
+{
+  listPointer = islist;
+  // hmm, could check the list here, but let's not bother, we can just call the thingy later on..
+  box = new QVBoxLayout(this);
+  // which is pretty much I need to do..
+  newIndex();    // hmm... 
+}
+
+void HistoryWidget::newIndex(){
+  // first make sure we have enough widgets to assign..
+  for(int i=indexWidgets.size(); i < listPointer->size(); i++){
+    IndexWidget* iw = new IndexWidget(this);
+    indexWidgets.push_back(iw);   // no point naming it..
+    box->addWidget(iw);
+    iw->show();
+  }
+  // and go through and assing..
+  for(int i=0; i < listPointer->size() && i < indexWidgets.size(); i++){    // double check shouldn't be necessary, but if multithreaded behaviour of sorts..
+    indexWidgets[i]->setIndex((*listPointer)[i]);  // hope this isn't too slow..
+  }
+}
+    

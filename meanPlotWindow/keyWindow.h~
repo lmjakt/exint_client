@@ -1,0 +1,27 @@
+#ifndef KEYWINDOW_H
+#define KEYWINDOW_H
+
+#include <qwidget.h>
+#include <qcolor.h>
+#include <qstring.h>
+#include <vector>
+
+using namespace std;
+
+class KeyWindow : public QWidget
+{
+  Q_OBJECT
+    public : 
+    KeyWindow(vector<QColor*> c, QWidget* parent=0, const char* name=0);
+  
+  void paintKeys(vector<QString> k);
+  void clearAll();
+
+ private:
+  vector<QColor*> colours;
+  vector<QString> keys;
+  
+  void paintEvent(QPaintEvent* e);
+};
+
+#endif

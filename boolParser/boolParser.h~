@@ -1,0 +1,123 @@
+#ifndef BOOLPARSER_H
+#define BOOLPARSER_H
+
+#include <set>
+#include <qstring.h>   // for input
+
+using namespace std;        // bad.... don't do it.. but lazy..
+
+// define some structs and stuff that can be used to parse a boolean expression that
+// combines a set of groups of integers. -- use lots of void pointers rather than 
+// inheritance,, as it's simpler to write, and since we are going to keep the whole 
+// thing kind of small and tidy.. maybe..
+
+// structs have the below id's.. -hopefully ok.. 
+
+#define GROUP
+#define LB       // left bracket
+#define RB       // right bracket.. 
+#define AND
+#define OR
+#define NOT
+
+struct Group {
+  set<int> g;
+  void* fp;       // forward pointer,, 
+  void* rp;       // reverse pointer..
+  bool setNext(void* p);      // check rules and if OK, assign pointer.. 
+  bool setPrior(void* p);
+  int id(){
+    return(GROUP);
+  }
+  Group(set<int> gr){
+    group = g;
+    fp =0;
+    rp = 0;
+  }
+};
+
+struct Lb {
+  void* fp;
+  void* rp;
+  bool setNext(void* p);
+  bool setPrior(void* p);
+  int id(){
+    return(LB);
+  }
+  Lb(){
+    fp =0;
+    rp = 0;
+  }
+};
+
+struct Rb {
+  void* fp;
+  void* rp;
+  bool setNext(void* p);
+  bool setPrior(void* p);
+  int id(){
+    return(RB);
+  }
+  Rb(){
+    fp =0;
+    rp = 0;
+  }
+};
+
+struct And {
+  void* fp;
+  void* rp;
+  bool setNext(void* p);
+  bool setPrior(void* p);
+  int id(){
+    return(AND);
+  }
+  bool combine();    // look to the left and right,, -if we can combine what we see return true.. reset pointers in chain and delete left and right.. 
+  And(){
+    fp =0;
+    rp = 0;
+  }
+};
+
+struct Or {
+  void* fp;
+  void* rp;
+  bool setNext(void* p);
+  bool setPrior(void* p);
+  int id(){
+    return(OR);
+  }
+  bool combine();    // look to the left and right,, -if we can combine what we see return true.. reset pointers in chain and delete left and right.. 
+  Or(){
+    fp =0;
+    rp = 0;
+  }
+};
+
+struct Not {
+  void* fp;
+  void* rp;
+  bool setNext(void* p);
+  bool setPrior(void* p);
+  int id(){
+    return(NOT);
+  }
+  bool combine();    // look to the left and right,, -if we can combine what we see return true.. reset pointers in chain and delete left and right.. 
+  Not(){
+    fp =0;
+    rp = 0;
+  }
+};
+
+class BoolParser {
+  public :
+    BoolParser(QString input, vector<vector<int> >);         // vectors rather than sets as I have been using these in a different circumstance.. 
+  set<int> parseExpression();                      // do the actual parsing if OK.. 
+
+  private :
+    vector<set<int> > groups;
+  void* entryPoint;   // the beginning of the expression..
+  QString text;       // the text containing the thingy.. 
+
+  void parseString();  // parse the string and build up a thingy..
+  

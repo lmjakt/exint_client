@@ -1,0 +1,29 @@
+#ifndef HISTORYWIDGET_H
+#define HISTORYWIDGET_H
+
+#include "../dataStructs.h"
+#include "indexWidget.h"
+#include <vector>
+#include <deque>
+#include <qwidget.h>
+#include <qlayout.h>
+
+class HistoryWidget : public QWidget 
+{
+  Q_OBJECT
+
+    public :
+    HistoryWidget(deque<IndexWidget>* islist, QWidget* parent=0, const char* name=0);
+
+  public slots :
+    void newIndex();     // then just check the thingy..
+  
+  private :
+    deque<IndexWidget>* listPointer;
+  vector<indexWidget*> indexWidgets;
+  QVBoxLayout* box;        // so I can put new widgets into the layout..
+
+  // I probably need to set a size hint and stuff somewhere, but let's wait and see.
+};
+
+#endif

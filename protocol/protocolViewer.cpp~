@@ -1,0 +1,35 @@
+#include "protocolViewer.h"
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+ProtocolViewer::ProtocolViewer(int myId, QWidget* parent, const char* name)
+  : QWidget(parent, name)
+{
+  userId = myId;
+
+  view = new QScrollView(this);
+  frame = new QFrame(scroll->viewport());
+  scroll->addChild(frame);
+  
+  vbox = new QVBoxLayout(frame);
+  // which may be all I need to do for now..
+}
+
+void ProtocolViewer::setProtocol(Protocol prot){
+  protocol = prot;
+  // create and link the steps together.. 
+  steps.resize(protocol.steps.size());
+  for(int i=0; i < protocol.steps.size(); i++){
+    // if only one step, we don't do anything.. which is OK..
+    steps[i] = new ProtocolStepWidget(this);
+    steps[i]->setStep(*protocol.steps[i], i+1);
+    if(i > 0){
+      steps[i]->setPrior(steps[i-1]);
+      steps[i-1]->setAfter(steps[i]);
+    } // hence implementing a doubly linked list.. 
+  }
+  //// -- these are addresses.. which we've copied.. I think I have to rethink
+  //// -- as we may well lose ownership of these steps, and they may be deleted..
+  

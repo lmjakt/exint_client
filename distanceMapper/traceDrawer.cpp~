@@ -1,0 +1,28 @@
+#include "traceDrawer.h"
+#include <iostream>
+
+using namespace std;
+
+TraceDrawer::TracerDrawer(vector<tracePoint> pts, QWidget* parent, const char* name)
+  : QWidget(parent, name)
+{
+  setBackgroundMode(NoBackground);
+  points = pts;
+  if(points.size()){
+    maxy = miny = points[0].y;
+    maxx = minx = points[0].x;
+    for(uint i=0; i < points.size(); i++){
+      if(maxy < points[i].y){ maxy = points[i].y;}
+      if(miny > points[i].y){ miny = points[i].y;}
+      if(maxx < points[i].x){ maxx = points[i].x;}
+      if(minx > points[i].x){ minx = points[i].x;}
+    }
+  }
+  // which should be fine, though we'll have to be careful with stuff later on..
+}
+
+void TraceDrawer::paintEvent(QPaintEvent* e){
+  // do this in a stupid ugly way of sorts..
+
+}
+

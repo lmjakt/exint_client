@@ -1,0 +1,84 @@
+#include "genAlignView.h"
+#include "../probe_set/probe_set.h"
+#include <qwidget.h>
+#include <qscrollview.h>
+#include <qframe.h>
+#include <qlayout.h>
+#include <qcolor.h>
+#include <iostream>     // just in case...
+
+using namespace std;         // which I probably don't need at the moment but there you go..
+
+GenAlignView::GenAlignView(QWidget* parent, const char* name)
+  : QWidget(parent, name)
+{
+  // set up the scroll view and things.. 
+  // the question is, do I need a qlayout for the qscrollview, or is it ok without. 
+  // well we'll just have to wait and see.
+  setBackgroundColor(QColor(0, 0, 0));
+  scroll = new QScrollView(this, "scroll");
+  //scroll->setBackgroundColor(QColor(0, 0, 0));
+
+  //  frame = new QFrame(scroll->viewport());
+  //frame->setBackgroundColor(QColor(0, 0, 0));
+  //scroll->addChild(frame);
+
+  alignWidget = new GenAlignWidget(scroll->viewport());
+  connect(alignWidget, SIGNAL(moveMe(int, int)), this, SLOT(moveMe(int, int)) );
+  //  connect(alignWidget, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)) );
+  scroll->addChild(alignWidget);
+  //  QVBoxLayout* innerBox = new QVBoxLayout(scroll->viewport());
+  //innerBox->addWidget(alignWidget);
+  //innerBox->addStretch();
+
+  //alignWidget = new GenAlignWidget(frame, "alignWidget");
+  QVBoxLayout* vBox = new QVBoxLayout(this);
+  vBox->addWidget(scroll);
+  //  vBox->addStretch();
+  // and that should be pretty much everything needed.
+}
+
+void GenAlignView::setData(probe_data* pdata){
+  alignWidget->setData(pdata);   // and resize it..   which means two paint events. hmm ugly
+  //alignWidget->resize(scroll->viewport()->width(), alignWidget->sizeWish());
+  if(alignWidget->sizeWish() > scroll->viewport()->height()){
+    alignWidget->resize(scroll->viewport()->width(), alignWidget->sizeWish());
+  }else{
+    //scroll->viewport()->resize(size()); // ??
+    scroll->resizeContents(width(), height());
+    alignWidget->resize(size());
+    //alignWidget->update();
+  }  // frame->resize(scroll->viewport()->width(), alignWidget->sizeWish());
+  alignWidget->repaint();
+}
+
+void GenAlignView::resizeEvent(QResizeEvent* e){
+  // resize frame -- ? do I need to or not??
+  //frame->resize(scroll->viewport()->width(), alignWidget->sizeWish());
+  if(alignWidget->sizeWish() > scroll->viewport()->height()){
+    alignWidget->resize(scroll->viewport()->width(), alignWidget->sizeWish());
+  }else{
+    //scroll->viewport()->resize(size()); // ??
+    scroll->resizeContents(width(), height());
+    alignWidget->resize(size());
+  }
+  //  alignWidget->resize(frame->width(), alignWidget->sizeWish());
+  //alignWidget->update();
+}
+
+// void GenAlignView::mousePress(QMouseEvent* e){
+//   //cout << "mousePressEvent, updating lastX and lastY" << endl;
+//   lastX = e->x();
+//   lastY = e->y();
+// }
+
+// void GenAlignView::mouseMove(QMouseEvent* e){
+//   //cout << "mouseMove event, updating scrolling ? " << endl;
+//   scroll->scrollBy(lastX - e->x(), lastY- e->y());
+//   lastX = e->x();
+//   lastY = e->y();
+// }
+
+void GenAlignView::moveMe(int x, int y){
+  scroll->scrollBy(x, y);
+}

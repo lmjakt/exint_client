@@ -1,0 +1,18 @@
+#include "commentAdder.h"
+#include <qlayout.h>
+
+using namespace std;
+
+CommentAdder::CommentAdder(vector<ishAnnotationField> flds){
+  fields = flds;
+  commentArea = new QTextView(this, "commentArea");
+  commentArea->setReadOnly(false);
+  fieldChooser = new QComoboBox(false, this, "fieldChooser");
+  fieldChooser->insertItem("-----------");
+  // and then we get to inser some more.. 
+  for(int i=0; i < fields.size(); i++){
+    fieldChooser->insertItem(fields[i].fieldName);
+    fieldIndex.insert(make_pair(i+1, fields[i]));  // copy constrcuctor, but maybe that makes life easy.
+  }
+  FieldCreator* creator = new FieldCreator();
+  connect(creator, SIGNAL(makeField(QString)), this, SIGNAL(makeField(QString)) );

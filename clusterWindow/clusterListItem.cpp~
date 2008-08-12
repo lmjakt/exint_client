@@ -1,0 +1,30 @@
+#include "clusterListItem.h"
+#include "../client.h"
+#include <qlistview.h>
+#include <qstring.h>
+
+using namespace std;
+
+ClusterListItem::ClusterListItem(clusterSet* cs, int i, QListViewItem* parent)
+  : QListViewItem(parent)
+{
+  QString num;
+  num.setNum(i);
+  setText(num);
+  rtid = 234576;
+}
+
+int ClusterListItem::compare(QListViewItem* i, int col, bool ascending){
+  if(i->rtti() != rtid){
+    return(0);
+  }
+  if(clusterNumber == i->clusterNo()){
+    return(0);
+  }
+  if(clusterNumber > i->clusterNo()){
+    return(1);
+  }
+  return(-1);
+}
+
+  
