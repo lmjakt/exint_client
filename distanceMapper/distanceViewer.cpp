@@ -60,40 +60,21 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   connect(drawer, SIGNAL(compareCells(vector<int>, vector<int>)), this, SIGNAL(compareCells(vector<int>, vector<int>)) );
   connect(drawer, SIGNAL(setCoordinates()), this, SLOT(setcoords()) );
 
+  stressPlotter = new StressPlotter();
+  stressPlotter->show();
 
-  //tdDrawer = new TDPointDrawer(this, "tdDrawer");
-  cout << "making mapper " << endl;
-  mapper = new DistanceMapper(experiments, distances, 2, &pointMutex, &points, (QObject*)this);    // mapper updates points, then 
-  cout << "mapper made " << endl;
-  //som = new SomProcess(experiments, distances, &somMutex, &soms);
-  //somDrawer = new SomDrawer();     // make it toplevel..
-  //somDrawer->setCaption(captionName);
-  //cout << "somDrawer made up " << endl;
-  //somDrawer->resize(500, 500);
-  //cout << "somDrawer resized " << endl;
-  //somDrawer->show();
-  //cout << "showing somdrawer " << endl;
-  // and a timeer..
-  
+  mapper = new DistanceMapper(experiments, distances, 2, &pointMutex, &points, (QObject*)this, &stressValues);    // mapper updates points, then 
   
   frameTimer = new QTimer(this, "frameTimer");
   connect(frameTimer, SIGNAL(timeout()), this, SLOT(updateFrame()) );
   
-  cout << "frame timer made " << endl;
-
   watchTimer = new QTimer(this, "watchTimer");
   connect(watchTimer, SIGNAL(timeout()), this, SLOT(updatePoints()) );
 
-  cout << "watchTimer made " << endl;
-  //somTimer = new QTimer(this, "somTimer");
-  //connect(somTimer, SIGNAL(timeout()), this, SLOT(updateSom()) );
-
   QLabel* sodLabel = new QLabel("Self Organising Deltoids", this, "sodLabel");
-  //QLabel* somLabel = new QLabel("Self Organising Map", this, "somLabel");
 
   QPushButton* replayButton = new QPushButton("Replay", this, "replayButton");
   connect(replayButton, SIGNAL(clicked()), this, SLOT(replay()) );
-  cout << "replay button made " << endl;
 
   QPushButton* continueButton = new QPushButton("Continue", this, "continueButton");
   connect(continueButton, SIGNAL(clicked()), this, SLOT(continueMapping()) );   // is this legal ?? 
@@ -101,20 +82,6 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   QPushButton* restartButton = new QPushButton("Restart", this, "restartButton");
   connect(restartButton, SIGNAL(clicked()), this, SLOT(restart()) );   // is this legal ??   
 
-  //QPushButton* somReplay = new QPushButton("Replay Map", this, "somReplay");
-  //connect(somReplay, SIGNAL(clicked()), this, SLOT(replayMap()) );
-
-  //QPushButton* somRestart = new QPushButton("Restart SOM", this, "somRestart");
-  //connect(somRestart, SIGNAL(clicked()), this, SLOT(restartSom()) );
-
-  //somAlpha = new FSpinBox(0.001, 0.999, 100, this, "somAlpha");
-  //somSigma = new FSpinBox(0.1, 10, 100, this, "somSigma");    // not the acutal sigma value, but a sigma multiplier.. 
-  //maxDev = new FSpinBox(0, 10, 100, this, "maxDev");
-  //maxDev->setFValue(2.5);
-
-  //somAlpha->setFValue(0.5);
-  //somSigma->setFValue(2.5);
-  
   QPushButton* startButton = new QPushButton("start", this, "startButton");
   connect(startButton, SIGNAL(clicked()), this, SLOT(start()) );
 
@@ -124,22 +91,13 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   cout << "start button made, setting up the layout " << endl;
   // set up the layout..
   QVBoxLayout* vbox = new QVBoxLayout(this);
-  //  vbox->addWidget(drawer);    // and more later on..
-  //vbox->addWidget(tdDrawer);    // and more later on..
+
   QHBoxLayout* sodButtons = new QHBoxLayout();
   vbox->addWidget(sodLabel);
   vbox->addLayout(sodButtons);
   sodButtons->addWidget(replayButton);
   sodButtons->addWidget(continueButton);
   sodButtons->addWidget(restartButton);
-  //vbox->addWidget(somLabel);
-  //QHBoxLayout* somButtons = new QHBoxLayout();
-  //vbox->addLayout(somButtons);
-  //somButtons->addWidget(somReplay);
-  //somButtons->addWidget(somRestart);
-  //somButtons->addWidget(somAlpha);
-  //somButtons->addWidget(somSigma);
-  //somButtons->addWidget(maxDev);
 
   cout << "sod buttons done going for the bottom row " << endl;
   QHBoxLayout* bottomRow = new QHBoxLayout();
@@ -156,11 +114,7 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
 
 DistanceViewer::~DistanceViewer(){
   cout << "destroying distance viewer .. hahhaha" << endl;
-  //som->wait();
   mapper->wait();
-  //somDrawer->hide();
-  //delete somDrawer;
-
 
   drawer->hide();
   delete drawer;
@@ -175,18 +129,16 @@ DistanceViewer::~DistanceViewer(){
       delete points[i][j];
     }
   }
+  for(uint i=0; i < localPoints.size(); ++i){
+      delete localPoints[i];
+  }
 }
 
 void DistanceViewer::start(){
   cout << "start called " << endl;
   followFrame = 0;
-  //somFrame = 0; 
   watchTimer->start(20);  // 33 fps.. 
   mapper->start();   // for now, let's just run one of these babies.. !!
-  //somDrawer->setMaxDev(maxDev->fvalue());
-  //som->setFactors(somAlpha->fvalue(), somSigma->fvalue());
-  //som->start();
-  //somTimer->start(400);
 }
 
 void DistanceViewer::restart(){
@@ -201,9 +153,12 @@ void DistanceViewer::restart(){
     }
   }
   points.resize(0);    // forget the old points, we could store them somehwere, but maybe not.. 
+  cout << "resized points to 0" << endl;
   mapper->initialisePoints();
+  cout << "and got thingy to init points" << endl;
   followFrame = 0;
   mapper->start();
+  cout << "starting mapping process" << endl;
   watchTimer->start(20);
 }
 
@@ -213,16 +168,6 @@ void DistanceViewer::continueMapping(){
   watchTimer->start(20);
 }
 
-// void DistanceViewer::restartSom(){
-//   som->wait();          // BAD, as this might take some time, nevertheless, it is probably safter..
-//   soms.resize(0);
-//   somFrame = 0;
-//   somDrawer->setMaxDev(maxDev->fvalue());
-//   som->setFactors(somAlpha->fvalue(), somSigma->fvalue());
-//   som->initMap();
-//   som->start();
-//   somTimer->start(400);
-// }
 
 void DistanceViewer::customEvent(QCustomEvent* e){
   if(e->type() == 25341){
@@ -235,53 +180,38 @@ void DistanceViewer::customEvent(QCustomEvent* e){
 void DistanceViewer::updatePoints(){
   // we assume that by this time the points vector has been appended by the thingy..
   // so all we do is read off the last member of it..
-  pointMutex.lock();    // hmm   -- stops the other thread if in the middle of this .. 
-  if(!mapper->calculating && followFrame >= points.size()){
-    cout << "stopping the timer.. " << endl;
-    watchTimer->stop();
-    pointMutex.unlock();
-    return;
-  }
-  cout << "calling setData followFrame is : " << followFrame << "  and points size is : " << points.size() << endl;
-  if(points.size() <= followFrame){
-    cerr << "think I should be updating points, but points size is 0,, oh well" << endl;
-    pointMutex.unlock();
-    return;
-  }
-  vector<dpoint*> localPoints = points[followFrame];
-  followFrame++;
-  pointMutex.unlock();   // slows down calculation in favour of drawing.. ?? good or bad, I'm not sure.. 
-
-//   for(int i=0; i < localPoints.size(); i++){
-//     cout << "Viewer : point " << i << "  index " << localPoints[i]->index << "  stress : " << localPoints[i]->stress << "  x: " << localPoints[i]->coordinates[0] << "  y : " << localPoints[i]->coordinates[1] << endl;
-//   }
-  drawer->setData(localPoints);
-
-
-  //tdDrawer->setModel(localPoints);
-  /// this is terribly inefficient as it involves lots of copying of vectors, but I have a feeling that 
-  /// it will be fast enough anyway.. 
+    pointMutex.lock();    // hmm   -- stops the other thread if in the middle of this .. 
+    if(!points.size()){
+	pointMutex.unlock();
+	return;
+    }
+    if(!mapper->calculating && followFrame >= points.size()){
+	cout << "stopping the timer.. " << endl;
+	watchTimer->stop();
+//	pointMutex.unlock();
+//	return;
+    }
+    vector<dpoint*>& pointRefs = points.back();
+    if(followFrame < points.size()){
+	pointRefs = points[followFrame];
+	followFrame++;
+    }
+    // and then we need to make a copy..
+    if(!localPoints.size()){
+	localPoints.resize(pointRefs.size());
+	for(uint i=0; i < localPoints.size(); ++i){
+	    localPoints[i] = pointRefs[i]->copy(true);
+	}
+    }else{
+	for(uint i=0; i < localPoints.size(); ++i){
+	    pointRefs[i]->assignValues(localPoints[i]);
+	}
+    }
+    pointMutex.unlock();   // slows down calculation in favour of drawing.. ?? good or bad, I'm not sure.. 
+    
+    drawer->setData(localPoints);
+    stressPlotter->setData(stressValues);
 }
-
-// void DistanceViewer::updateSom(){
-//   somMutex.lock();
-//   if(som->finished() && somFrame >= soms.size()){
-//     cout << "stopping the some timer " << endl;
-//     somTimer->stop();
-//     somMutex.unlock();
-//     return;
-//   }
-//   if(somFrame >= soms.size()){
-//     cout << "somFrame is larger than or equal to soms.. : " << somFrame << endl;
-//     somMutex.unlock();
-//     return;
-//   }
-//   mapDescription ld = soms[somFrame];
-//   somFrame++;
-//   somMutex.unlock();
-//   //  cout << "ld membership size is : " << ld.membership.size() << endl;
-//   somDrawer->setData(ld);     // this will involve lots of copying, but never mind.. 
-// }
 
 void DistanceViewer::replay(){
   cout << "replay function " << endl;
@@ -289,11 +219,6 @@ void DistanceViewer::replay(){
   //somDrawer->setMaxDev(maxDev->fvalue());
   frameTimer->start(10);    // 25 fps.. as not so many frames..
 }
-
-// void DistanceViewer::replayMap(){
-//   somFrame = 0;
-//   somTimer->start(250);   // 4 frames per second..
-// }
 
 void DistanceViewer::updateFrame(){
   cout << "calling updateFrame frame is : " << frame << endl;
@@ -306,9 +231,6 @@ void DistanceViewer::updateFrame(){
   pointMutex.unlock();
 
   drawer->setData(localPoints);
-
-
-  //tdDrawer->setModel(localPoints);
   frame++;
 }
 
@@ -320,16 +242,11 @@ void DistanceViewer::updatePosition(int i, float x, float y){
 
 
   drawer->setData(localPoints);
-
-
-  //  mapper->start();
-  // watchTimer->start(30);
 }
 
 void DistanceViewer::setcoords(){
   cout << "Distnace viewer set coordinates .. " << endl; 
   vector<PointCoordinate> cords;   // just push it back..
-  //  vector<dpoint> pts = points.last();     // just the most recent .. -- I forget the function that does this.. 
   vector<dpoint*> pts = points[points.size() -1];
   for(uint i=0; i < pts.size(); i++){        
     cords.push_back(PointCoordinate(pts[i]->index, pts[i]->coordinates, pts[i]->dimNo));

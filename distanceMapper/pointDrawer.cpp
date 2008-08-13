@@ -38,6 +38,7 @@ using namespace std;
 PointDrawer::PointDrawer(QWidget* parent, const char* name)
   : QWidget(parent, name)
 {
+    setCaption("Distances");
   setBackgroundMode(NoBackground);    // but really should have something to put it there.. hmm
   movingId = -1;
   regions.resize(0);

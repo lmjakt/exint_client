@@ -27,6 +27,7 @@
 
 #include "distanceMapper.h"
 #include "pointDrawer.h"
+#include "stressPlotter.h"
 #include "tdPointDrawer.h"
 #include "../dataStructs.h"
 //#include "../som/somProcess.h"
@@ -69,6 +70,8 @@ class DistanceViewer : public QWidget
   QString captionName;                    // something for the captions.. 
   vector<vector<dpoint*> > points;          // keep points in here.. receive from the thingy. 
                                            // keep whole history in here, so that I can replay things..
+  vector<dpoint*> localPoints;             // a copy of the points that is never touched by the mapper.
+  vector<float> stressValues;              // to monitor the reduction in error... 
   //vector<mapDescription> soms;             // self organising maps.. of some sort.. 
   vector<vector<float> > distances;
   vector<int> experiments;                 // might as well keep a copy in here.. it's easy enough.. 
@@ -82,6 +85,7 @@ class DistanceViewer : public QWidget
 
   DistanceMapper* mapper;                  // runs the thread and stuff....... hoo hoo yeahh.
   PointDrawer* drawer;                     // draws the point, and so far is the only thing that gets displayed. 
+  StressPlotter* stressPlotter;            // plots the reduction in stress.. 
   //  TDPointDrawer* tdDrawer;                 // 3 dimensions.. !! 
 
   QTimer* frameTimer;

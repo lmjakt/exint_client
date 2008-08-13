@@ -1,3 +1,27 @@
+//Copyright Notice
+/*
+    eXintegrator integrated expression analysis system
+    Copyright (C) 2004  Martin Jakt & Okada Mitsuhiro
+  
+    This file is part of the eXintegrator integrated expression analysis system. 
+    eXintegrator is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version. 
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+  
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    PS. If you can think of a better name, please let me know...
+*/
+//End Copyright Notice
+
 #ifndef DISTANCEVIEWER_H
 #define DISTANCEVIEWER_H
 
@@ -43,7 +67,7 @@ class DistanceViewer : public QWidget
 
 
   QString captionName;                    // something for the captions.. 
-  vector<vector<dpoint> > points;          // keep points in here.. receive from the thingy. 
+  vector<vector<dpoint*> > points;          // keep points in here.. receive from the thingy. 
                                            // keep whole history in here, so that I can replay things..
   //vector<mapDescription> soms;             // self organising maps.. of some sort.. 
   vector<vector<float> > distances;
@@ -70,6 +94,7 @@ class DistanceViewer : public QWidget
   signals :
     void compareCells(vector<int>, vector<int>);
   void setCoordinates(vector<PointCoordinate>);
+  void deleteMe();
 };
 
 #endif

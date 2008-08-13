@@ -29,35 +29,44 @@
 #include <vector>
 #include <qmutex.h>
 #include <iostream>
+#include <string.h>
 
 using namespace std;    //please forgive me..
 
 struct componentVector {
-  bool attractive;     // is it an attractor or repulsor..
-  float* forces;
-  int forceNo;        // this should have been called dimNo for dimensionNo, I may rename later .. 
-
-  //vector<float> forces;  // the components. 
-  componentVector(){};   // empty constructor
-  componentVector(vector<float> f, bool a){
-    attractive = a;
-    forces = new float[f.size()];
-    forceNo = f.size();
-    for(int i=0; i < forceNo; i++){
-      forces[i] = f[i];
+    bool attractive;     // is it an attractor or repulsor..
+    float* forces;
+    int forceNo;        // this should have been called dimNo for dimensionNo, I may rename later .. 
+    
+    //vector<float> forces;  // the components. 
+    componentVector(){};   // empty constructor
+    componentVector(vector<float> f, bool a){
+	attractive = a;
+	forces = new float[f.size()];
+	forceNo = f.size();
+	for(int i=0; i < forceNo; i++){
+	    forces[i] = f[i];
+	}
+	//forces = f;
     }
-    //forces = f;
-  }
-  componentVector(float* f, int n, bool a){
-    attractive = a;
-    forces = f;
-    //    forces = new float[n];
-    // memcpy(forces, f, n * sizeof(float));    // should be ok,,,
-    forceNo = n;
-  }
-  ~componentVector(){
-    delete []forces;
-  }
+    componentVector(float* f, int n, bool a){
+	attractive = a;
+	forces = f;
+	//    forces = new float[n];
+	// memcpy(forces, f, n * sizeof(float));    // should be ok,,,
+	forceNo = n;
+    }
+    ~componentVector(){
+	delete []forces;
+    }
+    componentVector* copy(){
+	componentVector* cp = new componentVector();
+	cp->attractive = attractive;
+	cp->forceNo = forceNo;
+	cp->forces = new float[forceNo];
+	memcpy( (void*)cp->forces, forces, sizeof(float) * forceNo);
+	return(cp);
+    }
 };
 
 struct dpoint {
@@ -84,7 +93,8 @@ struct dpoint {
   float move(float forceMultiplier);            // move the point, reset the force vectors to 0 if reset is true.. return the euclidean distance moved
   void resetForces();          // set the stress and force vectors to be 0.. 
   void setPos(vector<float> coords);
-  dpoint* copy();
+    dpoint* copy(bool includeComponents=false);
+    void assignValues(dpoint* p);  // assign values to p from this   
 
   private :
   //void addComponent(float* f, int n, bool a);
@@ -99,7 +109,7 @@ struct dpoint {
 class DistanceMapper : public QThread
 {
   public :
-    DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt);
+    DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<float>* stressLevels);
   ~DistanceMapper();  // don't know how much I'll need for these..
   void restart();     // start the mapping process agains. 
   void updatePosition(int i, float x, float y);  
@@ -112,6 +122,7 @@ class DistanceMapper : public QThread
   vector<vector<float> > distances;  // the optimal distances. 
   vector<dpoint*> points;              // the points representing the objects (usually experiments.. )..  
   vector<vector<dpoint*> >* parentPoints;
+  vector<float>* errors;
   QObject* parent;                 // for updating information.. 
   QMutex* pointMutex;
 
@@ -125,6 +136,7 @@ class DistanceMapper : public QThread
   float adjustVectors(bool linear=true);          // adjust the Vectors in the points.. returns the total force
   float movePoints();             // move the points.. and reset force vectors.. -- return distance moved
   void resetPoints();             // just go through and reset the points.. 
+  void updateParentPoints();
   void clonePoints();
 
   protected :

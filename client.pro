@@ -70,6 +70,7 @@ HEADERS		= images.h \
 		distanceMapper/tdPointDrawer.h \
 		distanceMapper/traceDrawer.h \
 		distanceMapper/traceViewer.h \
+		distanceMapper/stressPlotter.h \
 		customWidgets/fSpinBox.h \
 		customWidgets/lSpinBox.h \
 		distanceMapper/compareController.h \
@@ -162,6 +163,7 @@ SOURCES		= client.cpp \
 		distanceMapper/tdPointDrawer.cpp \
 		distanceMapper/traceDrawer.cpp \
 		distanceMapper/traceViewer.cpp \
+		distanceMapper/stressPlotter.cpp \
 		customWidgets/fSpinBox.cpp \
 		customWidgets/lSpinBox.cpp \
 		distanceMapper/compareController.cpp \

@@ -1,3 +1,27 @@
+//Copyright Notice
+/*
+    eXintegrator integrated expression analysis system
+    Copyright (C) 2004  Martin Jakt & Okada Mitsuhiro
+  
+    This file is part of the eXintegrator integrated expression analysis system. 
+    eXintegrator is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version. 
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+  
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    PS. If you can think of a better name, please let me know...
+*/
+//End Copyright Notice
+
 #include "pointDrawer.h"
 #include "distanceMapper.h"    // for the dpoint .. bit messy but there you go..
 #include <qwidget.h>
@@ -26,7 +50,11 @@ PointDrawer::~PointDrawer(){
   cout << "destroying point drawer" << endl;
 }
 
-void PointDrawer::setData(vector<dpoint> p){
+void PointDrawer::emptyData(){
+  points.resize(0);
+}
+
+void PointDrawer::setData(vector<dpoint*> p){
   points = p;
   regions.resize(points.size());
   itsA = true;
@@ -34,19 +62,19 @@ void PointDrawer::setData(vector<dpoint> p){
   if(points.size() < 1){
     maxX = minX = maxY = minY = 0;
   }
-  if(points[0].coordinates.size() < 2){
+  if(points[0]->dimNo < 2){
     cerr << "we will be crashing soon. That really rather sucks a lot, but what can one do.. " << endl;
     return;
   }
-  minX = maxX = points[0].coordinates[0];
-  minY = maxY = points[0].coordinates[1];
-  maxStress = points[0].stress;
+  minX = maxX = points[0]->coordinates[0];
+  minY = maxY = points[0]->coordinates[1];
+  maxStress = points[0]->stress;
   for(int i=0; i < points.size(); i++){
-    if(points[i].coordinates[0] > maxX){ maxX = points[i].coordinates[0]; }
-    if(points[i].coordinates[0] < minX){ minX = points[i].coordinates[0]; }
-    if(points[i].coordinates[1] > maxY){ maxY = points[i].coordinates[1]; }
-    if(points[i].coordinates[1] < minY){ minY = points[i].coordinates[1]; }
-    if(points[i].stress > maxStress){ maxStress = points[i].stress; }
+    if(points[i]->coordinates[0] > maxX){ maxX = points[i]->coordinates[0]; }
+    if(points[i]->coordinates[0] < minX){ minX = points[i]->coordinates[0]; }
+    if(points[i]->coordinates[1] > maxY){ maxY = points[i]->coordinates[1]; }
+    if(points[i]->coordinates[1] < minY){ minY = points[i]->coordinates[1]; }
+    if(points[i]->stress > maxStress){ maxStress = points[i]->stress; }
   }
   // and call update.. !!! hooo hoo yeah....
   update();
@@ -67,7 +95,10 @@ void PointDrawer::paintEvent(QPaintEvent* e){
   if(points.size()){
     float xMult = ((float)(width() - 2 * margin))/(maxX - minX);
     float yMult = ((float)(height() - 2 * margin))/(maxY - minY);
-    float stressMultiplier = 255.0 / maxStress;     // not so good as we don't see any reduction in the max stress. 
+    float stressMultiplier = 0;
+    if(maxStress > 0){
+      stressMultiplier = 254.0 / maxStress;     // not so good as we don't see any reduction in the max stress. 
+    }
     // we might want to change this sometime later, so it is relative to start.
     
     QPainter p(&pix);              // should be ok.. 
@@ -76,21 +107,21 @@ void PointDrawer::paintEvent(QPaintEvent* e){
     QPen repulse(QColor(145, 152, 226), 1);    // light blue.. 
     // and let's go through the points and draw them as we see fit.. need some
     for(int i=0; i < points.size(); i++){
-      if(points[i].coordinates.size() < 2){
+      if(points[i]->dimNo < 2){
 	cerr << "??? bugger me backwards, but the coordinates size is less than two for i : " << i << endl;
 	continue;
       }
-      int x = (int)((points[i].coordinates[0] - minX) * xMult) + margin;
-      int y = (int)((points[i].coordinates[1] - minY) * yMult) + margin;
+      int x = (int)((points[i]->coordinates[0] - minX) * xMult) + margin;
+      int y = (int)((points[i]->coordinates[1] - minY) * yMult) + margin;
       //  int r = (int)(points[i].stress * stressMultiplier);
       //  int g = 255 - r;
       // draw the component vectors as lines, either light blue or yellow.. 
-      for(int j=0; j < points[i].components.size(); j++){
-	float fx = points[i].coordinates[0] + forceMultiplier * points[i].components[j].forces[0];
-	float fy = points[i].coordinates[1] + forceMultiplier * points[i].components[j].forces[1];
+      for(int j=0; j < points[i]->componentNo; j++){
+	float fx = points[i]->coordinates[0] + forceMultiplier * points[i]->components[j]->forces[0];
+	float fy = points[i]->coordinates[1] + forceMultiplier * points[i]->components[j]->forces[1];
 	int x2 = (int)((fx - minX) * xMult) + margin;
 	int y2 = (int)((fy - minY) * yMult) + margin;
-	if(points[i].components[j].attractive){
+	if(points[i]->components[j]->attractive){
 	  p.setPen(attraction);
 	}else{
 	  p.setPen(repulse);
@@ -99,16 +130,20 @@ void PointDrawer::paintEvent(QPaintEvent* e){
       }
     }
     for(int i=0; i < points.size(); i++){
-      if(points[i].coordinates.size() < 2){
+      if(points[i]->dimNo < 2){
 	cerr << "??? bugger me backwards, but the coordinates size is less than two for i : " << i << endl;
 	continue;
       }
-      int x = (int)((points[i].coordinates[0] - minX) * xMult) + margin - diameter/2;
-      int y = (int)((points[i].coordinates[1] - minY) * yMult) + margin - diameter/2;
+      int x = (int)((points[i]->coordinates[0] - minX) * xMult) + margin - diameter/2;
+      int y = (int)((points[i]->coordinates[1] - minY) * yMult) + margin - diameter/2;
       //int r = 255;   // temp solution
-      int r = (int)(points[i].stress * stressMultiplier);
+      //cout << "points[" << i << "]->stress is " << points[i]->stress << "  multiplier is : " << stressMultiplier << "max  Stress is : " << maxStress << endl;
+      //cout << "Drawer : point " << i << "  index " << points[i]->index << "  stress : " << points[i]->stress << "  x: " << points[i]->coordinates[0] << "  y : " << points[i]->coordinates[1] << endl;
+
+      int r = (int)(points[i]->stress * stressMultiplier);
       int g = 255 - r;
       int b = 0;
+      //cout << "\t\t\tr : " << r << "  g " << g << endl;
       if(selectedA.count(i)){
 	r = 0;
 	g = 75;
@@ -126,7 +161,7 @@ void PointDrawer::paintEvent(QPaintEvent* e){
       
       // draw the number of the thing..
       p.setPen(QPen(QColor(255, 255, 255), 1));
-      numString.setNum(points[i].index);
+      numString.setNum(points[i]->index);
       int extra = 10;
       p.drawText(x-extra, y, diameter+extra*2, diameter, Qt::AlignCenter, numString);
     }
@@ -236,10 +271,10 @@ void PointDrawer::checkSelected(){
   // empty a..
   while(a->size()){ a->erase(a->begin()); }
   for(int i=0; i < points.size(); i++){
-    int x = (int)((points[i].coordinates[0] - minX) * xMult) + margin;
-    int y = (int)((points[i].coordinates[1] - minY) * yMult) + margin;
+    int x = (int)((points[i]->coordinates[0] - minX) * xMult) + margin;
+    int y = (int)((points[i]->coordinates[1] - minY) * yMult) + margin;
     if(r.contains(QPoint(x, y))){
-      cout << "Point with index : " << points[i].index << " is contained by the region " << endl;
+      cout << "Point with index : " << points[i]->index << " is contained by the region " << endl;
       // stick everything into a..
       b->erase(i);          // don't check, just call erase, no harm if nothing there.. 
       a->insert(i);         // use the index from the vector rather than the internal index, it's easier..
@@ -261,12 +296,12 @@ void PointDrawer::compareCellTypes(){
   for(it = selectedA.begin(); it != selectedA.end(); it++){
     // ugly,,
     if(*it < points.size()){
-      a.push_back(points[*it].index);
+      a.push_back(points[*it]->index);
     }
   }
   for(it = selectedB.begin(); it != selectedB.end(); it++){
     if(*it < points.size()){
-      b.push_back(points[*it].index);
+      b.push_back(points[*it]->index);
     }
   }
   emit compareCells(a, b);     // the order doesn't matter so much.. 
