@@ -118,6 +118,8 @@ DistanceViewer::~DistanceViewer(){
 
   drawer->hide();
   delete drawer;
+  stressPlotter->hide();
+  delete stressPlotter;
 
   delete mapper;    // main things to delete.. 
   

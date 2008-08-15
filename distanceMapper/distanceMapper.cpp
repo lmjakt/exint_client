@@ -292,10 +292,16 @@ void DistanceMapper::updatePosition(int i, float x, float y){
     }
   }
   adjustVectors();
-  pointMutex->lock();
-  parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
-  pointMutex->unlock();
-  clonePoints();                       // necessary to make sure we have new points.. 
+  if(0){
+      pointMutex->lock();
+      parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
+      pointMutex->unlock();
+      clonePoints();                       // necessary to make sure we have new points.. 
+  }else{
+      updateParentPoints();
+  }
+  movePoints();
+  resetPoints();
   //run();
 }
 
@@ -334,7 +340,7 @@ void DistanceMapper::run(){
   int generationCounter = 0;
   bool keepOnGoing = true;
   bool linear = true;
-  int halfPeriod = 500;
+  int halfPeriod = 100;
   pointMutex->lock();
   errors->resize(halfPeriod*2);
   errors->assign(halfPeriod*2, 0.0);

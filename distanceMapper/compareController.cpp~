@@ -1,4 +1,29 @@
+//Copyright Notice
+/*
+    eXintegrator integrated expression analysis system
+    Copyright (C) 2004  Martin Jakt & Okada Mitsuhiro
+  
+    This file is part of the eXintegrator integrated expression analysis system. 
+    eXintegrator is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version. 
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+  
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    PS. If you can think of a better name, please let me know...
+*/
+//End Copyright Notice
+
 #include "compareController.h"
+#include "traceDrawer.h"
 #include <qlabel.h>
 #include <qpushbutton.h>
 #include <qfiledialog.h>
@@ -36,8 +61,12 @@ CompareController::CompareController(QWidget* parent, const char* name)
   QPushButton* readPhylipButton = new QPushButton("Read Phylip Distances", this, "readPhylipButton");
   connect(readPhylipButton, SIGNAL(clicked()), this, SLOT(readPhylipDistances()) );
 
-  QPushButton* traceButton = new QPushButton("Trace Experiments");
-  connect(traceButton, SIGNAL(clicked()), this, SIGNAL(traceExperiments()) );
+  QPushButton* traceButton = new QPushButton("Trace Experiments", this, "traceButton");
+  connect(traceButton, SIGNAL(clicked()), this, SLOT(trace()) );
+  traceSigma = new FSpinBox(0.01, 10, 500, this, "traceSigma");
+  traceSigma->setFValue(2.0);
+  traceSigma->setMinimumWidth(minWidth);
+  QLabel* traceSigmaLabel = new QLabel("Sigma Mult.", this, "traceSigmaLabel");
 
   makeRecord = new QCheckBox("Record Distances", this, "makeRecord");
 
@@ -66,7 +95,11 @@ CompareController::CompareController(QWidget* parent, const char* name)
   vbox->addLayout(flatBox);
   vbox->addWidget(readPhylipButton);
   vbox->addLayout(phylipBox);
-  vbox->addWidget(traceButton);
+  QHBoxLayout* traceControls = new QHBoxLayout(vbox);
+  traceControls->addWidget(traceSigmaLabel);
+  traceControls->addWidget(traceSigma);
+  traceControls->addStretch();
+  traceControls->addWidget(traceButton);
   vbox->addLayout(traceBox);
   vbox->addWidget(makeRecord);
 }
@@ -102,6 +135,22 @@ void CompareController::newDistances(exptDistanceInfo info){
     fullBox->addWidget(viewer);
   }
   viewer->show();
+}
+
+void CompareController::newTrace(vector<tracePoint> points){
+  for(uint i=0; i < points.size(); i++){
+    cout << "id: " << points[i].id << "\tdistance: " << points[i].distance << "\tx: " << points[i].x << "\ty: " << points[i].y << endl;
+  }
+  // and do nothing more fore now.. ..
+  // ok let's just have a look at it..
+
+  TraceViewer* viewer = new TraceViewer(points, this, "viewer");
+  traces.insert(viewer);
+  traceBox->addWidget(viewer);
+  connect(viewer, SIGNAL(deleteMe()), this, SLOT(deleteSender()) );
+  viewer->show();
+  //  TraceDrawer* drawer = new TraceDrawer(points);
+  //  drawer->show();
 }
 
 void CompareController::readPhylipDistances(){
@@ -209,6 +258,10 @@ void CompareController::recordDistances(exptDistanceInfo& info){
 
 void CompareController::compareFull(){
   emit doFullCompare();
+}
+
+void CompareController::trace(){
+  emit traceExperiments(traceSigma->fvalue());
 }
 
 void CompareController::compareFlat(){
