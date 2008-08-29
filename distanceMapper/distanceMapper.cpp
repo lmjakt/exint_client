@@ -152,7 +152,7 @@ void dpoint::addComponent(componentVector* cv){
     components = newComps;
 }
 
-float dpoint::adjustVectors(dpoint* p, float d, bool linear){
+float dpoint::adjustVectors(dpoint* p, float d, float* dimFactors, bool linear){
   if(dimNo != p->dimNo){
     cerr << "point coordinate mismatch size thingy : " << endl;
     return(stress);
@@ -162,19 +162,14 @@ float dpoint::adjustVectors(dpoint* p, float d, bool linear){
 
   float D = 0;                 // the actual euclidean distance.. 
   for(int i=0; i < dimNo; i++){
-    coordDists[i] = p->coordinates[i] - coordinates[i];
+    coordDists[i] = dimFactors[i] * (p->coordinates[i] - coordinates[i]);
     if(coordDists[i] == 0){                // disaster.. 
-      coordDists[i] = MINFLOAT;                   // it's cheating, but it will cause some sort of movement away from each other (or towards.)
-      // maybe we don't have to initialise anything then.. we can just cheat. and set everything
-      // to 0 in the beginning.. -- giving us reproducible results as well. hmm 
-      cerr << "cheating, setting coorDists to  " << MINFLOAT <<  "  for : " << i << "   for point : " << index << "  compared to : " << p->index << endl;
+      coordDists[i] = MINFLOAT;                   // it's cheating, to avoid divide by 0 for a D of 0. (maybe better below).
     }
     D += (coordDists[i] * coordDists[i]);
-    // I know that the above looks really very clumsy, but it is in fact much faster than using the pow function
   }
   D = sqrt(D);   // alleluliahh
-  //  float delta = (D - d);   // i.e. delta is positive if we want to move towards point p by some measure.. 
-  // how about ...
+
   float delta;
   if(linear){
     delta = (D- d); // linear  by the fold difference.. 
@@ -231,6 +226,12 @@ DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int d
   pointMutex = mutx;
   errors = stressLevels;
 
+  // set the dimFactors to 1.
+  // Note this will crash if dimensionality is less than 0. 
+  dimFactors = 0;
+  resetDimFactors();
+  
+
   srand(time(0));
   //moveFactor = 0.005;      // just keep it below 1,, above one will lead to strange behaviour.. 
   moveFactor = 0.005;      // just keep it below 1,, above one will lead to strange behaviour.. 
@@ -259,6 +260,7 @@ DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int d
 
 DistanceMapper::~DistanceMapper(){
   cout << "destryoing the DistanceMapper object, hoho yeahh " << endl;
+  delete dimFactors;
 }
 
 void DistanceMapper::restart(){
@@ -303,7 +305,7 @@ float DistanceMapper::adjustVectors(bool linear){
     float stress = 0;
     for(uint j=0; j < expts.size(); j++){      // crash if the dimensions of the distances are not good.. what the hell though..
       if(i != j){
-	stress = points[i]->adjustVectors(points[j], distances[i][j], linear);
+	stress = points[i]->adjustVectors(points[j], distances[i][j], dimFactors, linear);
       }
     }
     totalStress += stress;
@@ -360,10 +362,18 @@ void DistanceMapper::run(){
 	  }else{
 	      updateParentPoints();
 	  }
-	  cout << "DistanceMapper generation : " << generationCounter++ << " stress : " << stress  // << "  moved : " << distanceMoved
-	       << "   total distance : " << totalDistance << "   Linear is : " << linear << endl;
+//	  cout << "DistanceMapper generation : " << generationCounter++ << " stress : " << stress  // << "  moved : " << distanceMoved
+//	       << "   total distance : " << totalDistance << "   Linear is : " << linear << endl;
 	  movePoints();
 	  resetPoints();
+	  cout << "Stress: " << stress << "  dim:";
+	  for(int k =0; k < dimensionality; ++k)
+	      cout << "\t" << dimFactors[k];
+	  cout << endl;
+	  // set the last dimension dimFactor to something reasonable.. 
+	  if(currentDimNo > 2)
+	      dimFactors[currentDimNo-1] = 1.0 - (float(j) / (float)halfPeriod); 
+
       }
       if(currentDimNo > 2){
 	  cout << "\nReducing dimensionality\n" << endl;
@@ -393,6 +403,7 @@ void DistanceMapper::setDim(int dim, int iter){
     }
     dimensionality = dim;
     iterationNo = iter;
+    resetDimFactors();
     reInitialise();
 }
 
@@ -449,4 +460,12 @@ void DistanceMapper::reduceDimensionality(){
 	//cout << "parent point now : " << (long)parentPoints->back()[i] << "  " << dno << " dims" << endl;
     }
     pointMutex->unlock();
+}
+
+void DistanceMapper::resetDimFactors(){
+    delete dimFactors;
+    dimFactors = new float[dimensionality];
+    for(int i=0; i < dimensionality; ++i)
+	dimFactors[i] = 1.0;
+    return;
 }

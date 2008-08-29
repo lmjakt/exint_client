@@ -88,7 +88,7 @@ struct dpoint {
     dpoint(int i, int dimensions, int compNo=100);
     ~dpoint();
     
-    float adjustVectors(dpoint* p, float d, bool linear=true);   // given another point, with an optimal distance of d
+    float adjustVectors(dpoint* p, float d, float* dimFactors, bool linear=true);   // given another point, with an optimal distance of d
     // adjust the vectors and return a measure of force in the system.. 
     float move(float forceMultiplier);            // move the point, reset the force vectors to 0 if reset is true.. return the euclidean distance moved
     void resetForces();          // set the stress and force vectors to be 0.. 
@@ -135,6 +135,7 @@ class DistanceMapper : public QThread
   int dimensionality;
   int currentDimNo;
   int iterationNo;
+  float* dimFactors;   // used for squeezing dimensions.. should have the size of dimensionality.. 
   // some functions..
   // don't need because the points will cheat if in the same point.. start all points at the origin.. 
 
@@ -144,6 +145,7 @@ class DistanceMapper : public QThread
   void updateParentPoints();
   void clonePoints();
   void reduceDimensionality();   // just reduce by 1.
+  void resetDimFactors();        // deletes dimFactors and then resets them to dimensionality.. 
 
   protected :
     void run();                 // the main function, essentially iterates through initialise points and 

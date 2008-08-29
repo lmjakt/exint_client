@@ -167,6 +167,8 @@ void DistanceViewer::deletePoints(){
     points.resize(0);
 }
 
+// A comment .. 
+
 void DistanceViewer::restart(){
   mapper->wait();
   // we have to delete the old points, this maybe dangerous as if the drawer were to try to draw something at this point we
