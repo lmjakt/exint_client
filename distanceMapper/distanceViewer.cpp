@@ -63,7 +63,8 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   stressPlotter = new StressPlotter();
   stressPlotter->show();
 
-  mapper = new DistanceMapper(experiments, distances, 2, &pointMutex, &points, (QObject*)this, &stressValues);    // mapper updates points, then 
+  int dimNo = 4;
+  mapper = new DistanceMapper(experiments, distances, dimNo, &pointMutex, &points, (QObject*)this, &stressValues);    // mapper updates points, then 
   
   frameTimer = new QTimer(this, "frameTimer");
   connect(frameTimer, SIGNAL(timeout()), this, SLOT(updateFrame()) );
@@ -88,6 +89,14 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   QPushButton* deleteButton =  new QPushButton("Delete", this, "deleteButton");
   connect(deleteButton, SIGNAL(clicked()), this, SIGNAL(deleteMe()) );
 
+  
+  QLabel* dimLabel = new QLabel("Dim no.", this);
+  QLabel* iterLabel = new QLabel("Iterations", this);
+  dimSpinner = new QSpinBox(2, 10, 1, this);
+  iterSpinner = new QSpinBox(20, 1000, 1, this);
+  dimSpinner->setValue(2);
+  iterSpinner->setValue(100);
+
   cout << "start button made, setting up the layout " << endl;
   // set up the layout..
   QVBoxLayout* vbox = new QVBoxLayout(this);
@@ -103,6 +112,10 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   QHBoxLayout* bottomRow = new QHBoxLayout();
   vbox->addLayout(bottomRow);
   bottomRow->addWidget(deleteButton);
+  bottomRow->addWidget(dimLabel);
+  bottomRow->addWidget(dimSpinner);
+  bottomRow->addWidget(iterLabel);
+  bottomRow->addWidget(iterSpinner);
   bottomRow->addStretch();
   bottomRow->addWidget(startButton);
   cout << "and the start Button added, must be the drawing of these that causes the problem " << endl;
@@ -137,10 +150,21 @@ DistanceViewer::~DistanceViewer(){
 }
 
 void DistanceViewer::start(){
-  cout << "start called " << endl;
-  followFrame = 0;
-  watchTimer->start(20);  // 33 fps.. 
-  mapper->start();   // for now, let's just run one of these babies.. !!
+    deletePoints();
+    mapper->setDim(dimSpinner->value(), iterSpinner->value());
+    cout << "start called " << endl;
+    followFrame = 0;
+    watchTimer->start(20);  // 33 fps.. 
+    mapper->start();   // for now, let's just run one of these babies.. !!
+}
+
+void DistanceViewer::deletePoints(){
+    for(uint i=0; i < points.size(); ++i){
+	for(uint j=0; j < points[i].size(); ++j)
+	    delete points[i][j];
+	points[i].resize(0);
+    }
+    points.resize(0);
 }
 
 void DistanceViewer::restart(){
@@ -148,15 +172,9 @@ void DistanceViewer::restart(){
   // we have to delete the old points, this maybe dangerous as if the drawer were to try to draw something at this point we
   // will get a segmentation fault as the two vectors share the pointers. Need to do something about that.. perhaps..
   drawer->emptyData();           // so the drawer doesn't try to draw any of these points after they've been deleted..
-  for(int i=0; i < points.size(); i++){
-    cout << "deleting from : " << i << endl;
-    for(int j=0; j < points[i].size(); j++){
-      delete points[i][j];
-    }
-  }
-  points.resize(0);    // forget the old points, we could store them somehwere, but maybe not.. 
+  deletePoints();
   cout << "resized points to 0" << endl;
-  mapper->initialisePoints();
+  mapper->reInitialise();
   cout << "and got thingy to init points" << endl;
   followFrame = 0;
   mapper->start();
@@ -198,8 +216,17 @@ void DistanceViewer::updatePoints(){
 	pointRefs = points[followFrame];
 	followFrame++;
     }
-    // and then we need to make a copy..
+    // if localPoints is defined, but it's dimNo is smaller than the current one, we'll need to get rid of it and make a new one..
+    if(localPoints.size() && pointRefs.size() && localPoints[0]->dimNo < pointRefs[0]->dimNo){
+	cout << "Deleting localPoints and resetting " << endl;
+	for(uint i=0; i < localPoints.size(); ++i)
+	    delete(localPoints[i]);
+	localPoints.resize(0);
+    }    
+
+    // and then we may need to make a copy..
     if(!localPoints.size()){
+	cout << "Making New localPoints" << endl;
 	localPoints.resize(pointRefs.size());
 	for(uint i=0; i < localPoints.size(); ++i){
 	    localPoints[i] = pointRefs[i]->copy(true);

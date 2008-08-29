@@ -37,6 +37,7 @@
 #include <qwidget.h>
 #include <qtimer.h>
 #include <qstring.h>
+#include <qspinbox.h>
 #include <vector>
 
 using namespace std;
@@ -65,6 +66,7 @@ class DistanceViewer : public QWidget
   private :
 
     void customEvent(QCustomEvent* e);     // receive updated from the thread..--- no function, we can change.. later.. 
+  void deletePoints();                     // remove the points.. 
 
 
   QString captionName;                    // something for the captions.. 
@@ -90,11 +92,11 @@ class DistanceViewer : public QWidget
 
   QTimer* frameTimer;
   QTimer* watchTimer;        // check if I have any more frames.. start when starting.. 
-  //QTimer* somTimer;          // check if the maps have been udated..
   int frame;    // which frame am I t0..
   int followFrame;   // I'm following frames.. 
-  //int somFrame;      // which frame am I drawing.. 
-  
+
+  QSpinBox* dimSpinner;
+  QSpinBox* iterSpinner;
   signals :
     void compareCells(vector<int>, vector<int>);
   void setCoordinates(vector<PointCoordinate>);

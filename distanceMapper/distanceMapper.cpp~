@@ -63,6 +63,7 @@ dpoint::dpoint(int i, int dimensions, int compNo){
   forceVectors = new float[dimNo];
   if(compNo < 1){ compNo = 1; }
   components = new componentVector*[compNo];     // where do I add these, I'm not sure.. we'll have to work it out later.. 
+  memset((void*)components, 0, sizeof(componentVector*) * compNo); 
   componentSize = compNo;
   componentNo = 0;
   //  coordinates.resize(dimensions);
@@ -77,37 +78,61 @@ dpoint::dpoint(int i, int dimensions, int compNo){
 dpoint::~dpoint(){
   //  cout << "dpoint destructor .. " << endl;
   //cout << "\t\tdpoint destructor comp no is : " << componentNo << endl;
-  for(int i=0; i < componentNo; i++){
-    delete components[i];
-  }
-  delete []components;  // should just delete the pointers, not the thing they point to (which are other pointers.. )
-  delete []forceVectors;
-  delete []coordinates;
+    for(int i=0; i < componentNo; i++){
+	delete components[i];
+    }
+    delete []components;  // should just delete the pointers, not the thing they point to (which are other pointers.. )
+    delete []forceVectors;
+    delete []coordinates;
 }
 
-dpoint* dpoint::copy(){
-  // make a new thingy and copy it.. 
-  dpoint* np = new dpoint(index, dimNo, componentSize);        // note I don't need to copy the components, as these will be evaluated.. 
-  memcpy(np->coordinates, coordinates, sizeof(float)*dimNo);
-  memcpy(np->forceVectors, forceVectors, sizeof(float)*dimNo);
-  return(np);
+dpoint* dpoint::copy(bool includeComponents){
+    // make a new thingy and copy it.. 
+    dpoint* np = new dpoint(index, dimNo, componentSize);        // note I don't need to copy the components, as these will be evaluated.. 
+    np->stress = stress;
+    memcpy(np->coordinates, coordinates, sizeof(float)*dimNo);
+    memcpy(np->forceVectors, forceVectors, sizeof(float)*dimNo);
+    if(!includeComponents)
+	return(np);
+    for(int i=0; i < componentNo; ++i)
+	np->components[i] = components[i]->copy();
+    return(np);
+}
+
+void dpoint::assignValues(dpoint* p){
+    if(dimNo != p->dimNo || componentSize != p->componentSize){
+	cerr << "dpoint::assignValues unable to assign values since point sizes do not appear to match" << endl;
+	exit;
+	return;
+    }
+    p->componentNo = componentNo;     /// possible memory leak here. But deleting the pointers would be a possible seg fault. so.. 
+    memcpy(p->coordinates, coordinates, sizeof(float) * dimNo);
+    memcpy(p->forceVectors, forceVectors, sizeof(float) * dimNo);
+    p->stress = stress;
+    for(int i=0; i < componentNo; ++i){
+	p->components[i]->attractive = components[i]->attractive;
+	p->components[i]->forceNo = components[i]->forceNo;   /// But this seems very inadvisable.
+	memcpy(p->components[i]->forces, components[i]->forces, sizeof(float) * components[i]->forceNo);
+    }
 }
 
 void dpoint::addComponent(componentVector* cv){
   //void dpoint::addComponent(float* f, int n, bool a){
-  if(componentNo < componentSize){
-    components[componentNo] = cv;
+  //  cout << "point with address : " << (long)this << "  adding component vector component No " << componentNo << "  size : " << componentSize << endl;
+    if(componentNo < componentSize){
+	delete components[componentNo];  // This should be safe in C++ as long as the pointer is set to 0.
+	components[componentNo] = cv;
+	componentNo++;
+	return;
+    }
+    cout << endl << "\t\t\tGROWING THE COMPONENTS FROM " << componentSize << "  to " << componentSize * 2 + 1 << endl << endl;
+    componentSize = componentSize * 2 + 1;    // just in case we start with 0.
+    componentVector** newComps = new componentVector*[componentSize];
+    memcpy(newComps, components, sizeof(componentVector*) * componentNo);  // which should be ok..
+    newComps[componentNo] = cv;
     componentNo++;
-    return;
-  }
-  cout << endl << "\t\t\tGROWING THE COMPONENTS FROM " << componentSize << "  to " << componentSize * 2 + 1 << endl << endl;
-  componentSize = componentSize * 2 + 1;    // just in case we start with 0.
-  componentVector** newComps = new componentVector*[componentSize];
-  memcpy(newComps, components, sizeof(componentVector*) * componentNo);  // which should be ok..
-  newComps[componentNo] = cv;
-  componentNo++;
-  delete []components;
-  components = newComps;
+    delete []components;
+    components = newComps;
 }
 
 float dpoint::adjustVectors(dpoint* p, float d, bool linear){
@@ -205,7 +230,7 @@ void dpoint::resetForces(){              /// THIS GIVES RISE TO A MEMORY LEAK IF
   //components.resize(0);
 }
 
-DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt){
+DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<float>* stressLevels){
   //cout << "beginning of distance mapper constructor " << endl;
   calculating = false;
   expts = expI;
@@ -214,6 +239,7 @@ DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int d
   parent = prnt;
   parentPoints = prntPoints;
   pointMutex = mutx;
+  errors = stressLevels;
 
   srand(time(0));
   //moveFactor = 0.005;      // just keep it below 1,, above one will lead to strange behaviour.. 
@@ -252,6 +278,10 @@ void DistanceMapper::restart(){
   //run();    // and start ..
 }
 
+
+//////////// This function is called from the distanceViewer 
+//////////// when a point has been moved manually
+
 void DistanceMapper::updatePosition(int i, float x, float y){
   wait();
   //  calculating = true;  -- Not sure about this change.. 
@@ -262,12 +292,19 @@ void DistanceMapper::updatePosition(int i, float x, float y){
     }
   }
   adjustVectors();
-  pointMutex->lock();
-  parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
-  pointMutex->unlock();
-  clonePoints();                       // necessary to make sure we have new points.. 
+  if(0){
+      pointMutex->lock();
+      parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
+      pointMutex->unlock();
+      clonePoints();                       // necessary to make sure we have new points.. 
+  }else{
+      updateParentPoints();
+  }
+  movePoints();
+  resetPoints();
   //run();
 }
+
 
 float DistanceMapper::adjustVectors(bool linear){
   // Looks like we could optimise this one,, in some way.. 
@@ -303,23 +340,34 @@ void DistanceMapper::run(){
   int generationCounter = 0;
   bool keepOnGoing = true;
   bool linear = true;
-  int halfPeriod = 500;
+  int halfPeriod = 100;
+  pointMutex->lock();
+  errors->resize(halfPeriod*2);
+  errors->assign(halfPeriod*2, 0.0);
+  pointMutex->unlock();
   while(keepOnGoing){     // initially just keep running.. until we add some control factors into the situation..
     int half = generationCounter / halfPeriod;
     // don't swap to non linear.. 
     //    linear = !(half % 2);
 
     float stress = adjustVectors(linear);
-    // update the parent..
     pointMutex->lock();
-    parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
+    (*errors)[generationCounter] = stress;
     pointMutex->unlock();
+    // update the parent..
+    if(0){
+	pointMutex->lock();
+	parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
+	pointMutex->unlock();
+	clonePoints();     // need to make sure we don't touch the same vectors again.. 
+    }else{
+	updateParentPoints();
+    }
     cout << "DistanceMapper generation : " << generationCounter++ << " stress : " << stress  // << "  moved : " << distanceMoved
 	 << "   total distance : " << totalDistance << "   Linear is : " << linear << endl;
 //     for(int i=0; i < points.size(); i++){
 //       cout << "Mapper : point " << i << "  index " << points[i]->index << "  stress : " << points[i]->stress << "  x: " << points[i]->coordinates[0] << "  y : " << points[i]->coordinates[1] << endl;
 //     }
-    clonePoints();     // need to make sure we don't touch the same vectors again.. 
     float distanceMoved = movePoints();
     // QCustomEvent* event = new QCustomEvent(25341);
     //qApp->postEvent(parent, event);    // let the viewer check periodically instead.. 
@@ -328,6 +376,7 @@ void DistanceMapper::run(){
     if(generationCounter >= halfPeriod*2){ keepOnGoing = false; }
     //   if(distanceMoved < 0.1 || generationCounter > 200){ keepOnGoing = false; }
   }
+  cout << "distanceMapper is done .." << endl;
   calculating = false; 
 }
 
@@ -340,20 +389,32 @@ void DistanceMapper::initialisePoints(){
   }
 } 
 
+void DistanceMapper::updateParentPoints(){
+    // this basically sets the last parent points to something else..
+    pointMutex->lock();
+    if(!parentPoints->size()){
+	parentPoints->push_back(points);
+	clonePoints();
+	pointMutex->unlock();
+	return;
+    }
+    // Otherwise we go throught the points and assign the appropriate values
+    for(uint i=0; i < parentPoints->back().size() && i < points.size(); ++i){
+//	cout << "calling assignValues " << endl;
+	points[i]->assignValues(parentPoints->back()[i]);
+    }
+    pointMutex->unlock();
+}
+	
+
 
 void DistanceMapper::clonePoints(){
   // because we are handing over control of the points to the owner, we need to have some new points to 
   // manipulate. Because we are using pointers for everything, we will need to copy the thingy.. probably the best way 
   // would be to provide a copy constructor.. -- using = ,, but hmm,, I think a copy command might be better.. 
+//    cout << "clone points .. " << endl;
   for(int i=0; i < points.size(); i++){
-//     cout << "clonePoints point " << i << "  coordinates and forces " << endl;
-//     for(int j=0; j < points[i]->dimNo; j++){
-//       cout << "\t" << j << "   coord " << points[i]->coordinates[j] << "   forceVector : " << points[i]->forceVectors[j] << endl;
-//     }
     points[i] = points[i]->copy();    // this doesn't copy the componentVectors, nor the stress, but should be enough.. Note this is could easily lead to memory leaks..
-//     cout << "After Cloning .. " << endl;
-//     for(int j=0; j < points[i]->dimNo; j++){
-//       cout << "\t" << j << "   coord " << points[i]->coordinates[j] << "   forceVector : " << points[i]->forceVectors[j] << endl;
-//     }
+
   }
 }

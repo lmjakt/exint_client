@@ -100,10 +100,11 @@ dpoint* dpoint::copy(bool includeComponents){
 }
 
 void dpoint::assignValues(dpoint* p){
-    if(dimNo != p->dimNo || componentSize != p->componentSize){
+    if(dimNo > p->dimNo || componentSize > p->componentSize){
 	cerr << "dpoint::assignValues unable to assign values since point sizes do not appear to match" << endl;
-	exit;
-	return;
+	cerr << "this : " << dimNo << "  " << componentSize << "  p: " << (long)p << "  "  << p->dimNo << "  " << p->componentSize << endl;
+	exit(1);
+//	return;
     }
     p->componentNo = componentNo;     /// possible memory leak here. But deleting the pointers would be a possible seg fault. so.. 
     memcpy(p->coordinates, coordinates, sizeof(float) * dimNo);
@@ -114,6 +115,22 @@ void dpoint::assignValues(dpoint* p){
 	p->components[i]->forceNo = components[i]->forceNo;   /// But this seems very inadvisable.
 	memcpy(p->components[i]->forces, components[i]->forces, sizeof(float) * components[i]->forceNo);
     }
+}
+
+// Since we don't need to add any more memory, we can just decrease the number that tell us how
+// many dimensions we are using. For the dpoint that is just changing the dimNo itself. For the
+// componentVectors, all that is necessary is to change forceNo.
+int dpoint::shrinkDimNo(uint s){
+    if((uint)dimNo - s < 2){
+	cerr << "Attempt to shrink dpoint dimNo to " << (uint)dimNo - s << "  foiled. " << endl;
+	return(0);
+    }
+    dimNo = (uint)dimNo - s;
+    for(int i = 0; i < componentNo; ++i){
+	components[i]->forceNo = dimNo;
+    }
+    //cout << "shrank dpoint with address : " << (long)this << "  to " << dimNo << endl;
+    return(dimNo);
 }
 
 void dpoint::addComponent(componentVector* cv){
@@ -136,8 +153,6 @@ void dpoint::addComponent(componentVector* cv){
 }
 
 float dpoint::adjustVectors(dpoint* p, float d, bool linear){
-  //cout << endl << "adjustVectors : " << endl;
-  
   if(dimNo != p->dimNo){
     cerr << "point coordinate mismatch size thingy : " << endl;
     return(stress);
@@ -145,10 +160,8 @@ float dpoint::adjustVectors(dpoint* p, float d, bool linear){
   // we can speed up the process by making coordDists a member, so we don't have to new it every time (bigger memory use though)
   float* coordDists = new float[dimNo];
 
-  //  vector<float> coordDists(coordinates.size());
   float D = 0;                 // the actual euclidean distance.. 
   for(int i=0; i < dimNo; i++){
-    //cout << "\t" << i << " this : " << coordinates[i] << "  that: " << p->coordinates[i] << endl;
     coordDists[i] = p->coordinates[i] - coordinates[i];
     if(coordDists[i] == 0){                // disaster.. 
       coordDists[i] = MINFLOAT;                   // it's cheating, but it will cause some sort of movement away from each other (or towards.)
@@ -169,43 +182,19 @@ float dpoint::adjustVectors(dpoint* p, float d, bool linear){
     delta = (D- d) * fabs(log(D/d));    // scale by the fold difference.. 
   }
 
-  //cout << "Distance is : " << D << "   d : " << d << "   delta : " << delta << endl;
                                   // adjust the force vectors by some measure
   stress += fabs(delta);     // the absolute amount of stress on the point.. 
-  //stress += (delta*delta);     // the absolute amount of stress on the point.. 
-  //// multiply each coordinate distance by (delta / D) and add to the force Vectors..
-  /// 
-  ///  if delta is negative (the points are too close to each other,, then the coordinate distances will be multiplied by 
-  ///  a negative number.. and will tend to increase the distance between the two points.. I think.. hmm.
-  //cout << "Force Vectors increment  : " << endl;
   float* compForces = new float[dimNo];
-  //  vector<float> compForces(coordinates.size());
   for(int i=0; i < dimNo; i++){
-    //if(delta > 0){
-    //cout << "Force Vectors : ";
     if(fabs(delta) > MINFLOAT){
-      //cout << "   " <<  i << "  " << forceVectors[i] << " --> "; 
       forceVectors[i] += (delta * coordDists[i])/D;
-      //cout << forceVectors[i] << endl; 
       compForces[i] = (delta * coordDists[i])/D;   // Squaring seems to get us out of normal range of values.. bugger.  
-      //cout << "compForces : " << i << "  : " << compForces[i] << endl;
     }else{
-      //cout << "delta is : " << delta << "   D is " << D << "  and d is " << d << endl;
       compForces[i] = 0;
     }
-    //forceVectors[i] += (delta * delta * coordDists[i])/D;
-    //compForces[i] = (delta * delta * coordDists[i])/D;
-    // big problems are bigger than small problems.. 
-      //}else{
-      //forceVectors[i] += (delta * coordDists[i])/(D*2);        // repulsive forces count for less at longer further distances. 
-      //compForces[i] = (delta * coordDists[i])/(D*2);
-      //}
-    //cout << "\t" << i << " : " << (delta * coordDists[i])/D;
   }
   addComponent(new componentVector(compForces, dimNo, (delta > 0)));
   delete []coordDists;
-  //  components.push_back(componentVector(compForces, (delta > 0)));
-  //  cout << endl << endl;
   return(stress);     // not really useful as it's an intermediate value.. 
 }
 
@@ -236,6 +225,7 @@ DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int d
   expts = expI;
   distances = d;
   dimensionality = dims;
+  currentDimNo = dims;
   parent = prnt;
   parentPoints = prntPoints;
   pointMutex = mutx;
@@ -252,14 +242,14 @@ DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int d
   }
   // count the total distance in the thingy.. as counted by the program..
   totalDistance = 0;
-  for(int i=0; i < distances.size(); i++){
-    for(int j=0; j < distances[i].size(); j++){
+  for(uint i=0; i < distances.size(); i++){
+    for(uint j=0; j < distances[i].size(); j++){
       totalDistance += distances[i][j];
     }
   }
   // though that really is overcounting by a fair stretch as we count in both directions.. 
   points.reserve(expts.size());
-  for(int i=0; i < expts.size(); i++){
+  for(uint i=0; i < expts.size(); i++){
     points.push_back(new dpoint(expts[i], dimensionality, expts.size()));    // 2 dimensional coordinates.. i.e. map to a flat surface .. 
   }
   initialisePoints();
@@ -285,7 +275,7 @@ void DistanceMapper::restart(){
 void DistanceMapper::updatePosition(int i, float x, float y){
   wait();
   //  calculating = true;  -- Not sure about this change.. 
-  if(points.size() > i){
+  if(points.size() > (uint)i){
     if(points[i]->dimNo > 1){
       points[i]->coordinates[0] = x;
       points[i]->coordinates[1] = y;
@@ -309,9 +299,9 @@ void DistanceMapper::updatePosition(int i, float x, float y){
 float DistanceMapper::adjustVectors(bool linear){
   // Looks like we could optimise this one,, in some way.. 
   float totalStress = 0;
-  for(int i=0; i < expts.size(); i++){
-    float stress;
-    for(int j=0; j < expts.size(); j++){      // crash if the dimensions of the distances are not good.. what the hell though..
+  for(uint i=0; i < expts.size(); i++){
+    float stress = 0;
+    for(uint j=0; j < expts.size(); j++){      // crash if the dimensions of the distances are not good.. what the hell though..
       if(i != j){
 	stress = points[i]->adjustVectors(points[j], distances[i][j], linear);
       }
@@ -323,14 +313,14 @@ float DistanceMapper::adjustVectors(bool linear){
 
 float DistanceMapper::movePoints(){
   float movedDistance = 0;
-  for(int i=0; i < points.size(); i++){
+  for(uint i=0; i < points.size(); i++){
     movedDistance += points[i]->move(moveFactor);
   }
   return(movedDistance);
 }
 
 void DistanceMapper::resetPoints(){
-  for(int i=0; i < points.size(); i++){
+  for(uint i=0; i < points.size(); i++){
     points[i]->resetForces();
   }
 }
@@ -338,51 +328,77 @@ void DistanceMapper::resetPoints(){
 void DistanceMapper::run(){
   calculating = true;
   int generationCounter = 0;
-  bool keepOnGoing = true;
-  bool linear = true;
-  int halfPeriod = 100;
-  pointMutex->lock();
-  errors->resize(halfPeriod*2);
-  errors->assign(halfPeriod*2, 0.0);
-  pointMutex->unlock();
-  while(keepOnGoing){     // initially just keep running.. until we add some control factors into the situation..
-    int half = generationCounter / halfPeriod;
-    // don't swap to non linear.. 
-    //    linear = !(half % 2);
 
-    float stress = adjustVectors(linear);
-    pointMutex->lock();
-    (*errors)[generationCounter] = stress;
-    pointMutex->unlock();
-    // update the parent..
-    if(0){
-	pointMutex->lock();
-	parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
-	pointMutex->unlock();
-	clonePoints();     // need to make sure we don't touch the same vectors again.. 
-    }else{
-	updateParentPoints();
-    }
-    cout << "DistanceMapper generation : " << generationCounter++ << " stress : " << stress  // << "  moved : " << distanceMoved
-	 << "   total distance : " << totalDistance << "   Linear is : " << linear << endl;
-//     for(int i=0; i < points.size(); i++){
-//       cout << "Mapper : point " << i << "  index " << points[i]->index << "  stress : " << points[i]->stress << "  x: " << points[i]->coordinates[0] << "  y : " << points[i]->coordinates[1] << endl;
-//     }
-    float distanceMoved = movePoints();
-    // QCustomEvent* event = new QCustomEvent(25341);
-    //qApp->postEvent(parent, event);    // let the viewer check periodically instead.. 
-    /// and let's gene
-    resetPoints();
-    if(generationCounter >= halfPeriod*2){ keepOnGoing = false; }
-    //   if(distanceMoved < 0.1 || generationCounter > 200){ keepOnGoing = false; }
+  //bool keepOnGoing = true;
+  bool linear = true;
+  int halfPeriod = iterationNo;
+  int mappingPeriods = 1 + (currentDimNo - 2); 
+  mappingPeriods = mappingPeriods < 1 ? 1 : mappingPeriods;
+  
+  pointMutex->lock();
+  errors->resize(halfPeriod * mappingPeriods);
+  errors->assign(halfPeriod * mappingPeriods, 0.0);
+  pointMutex->unlock();
+
+//  while(keepOnGoing){     // initially just keep running.. until we add some control factors into the situation..
+  for(int i=0; i < mappingPeriods; ++i){
+      for(int j=0; j < halfPeriod; ++j){
+	  //int half = generationCounter / halfPeriod;
+	  // don't swap to non linear.. 
+	  //    linear = !(half % 2);
+	  
+	  float stress = adjustVectors(linear);
+	  pointMutex->lock();
+	  (*errors)[generationCounter] = stress;
+	  pointMutex->unlock();
+	  // update the parent..
+	  if(0){
+	      pointMutex->lock();
+	      parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
+	      pointMutex->unlock();
+	      clonePoints();     // need to make sure we don't touch the same vectors again.. 
+	  }else{
+	      updateParentPoints();
+	  }
+	  cout << "DistanceMapper generation : " << generationCounter++ << " stress : " << stress  // << "  moved : " << distanceMoved
+	       << "   total distance : " << totalDistance << "   Linear is : " << linear << endl;
+	  movePoints();
+	  resetPoints();
+      }
+      if(currentDimNo > 2){
+	  cout << "\nReducing dimensionality\n" << endl;
+	  reduceDimensionality();
+	  currentDimNo--;
+      }
   }
   cout << "distanceMapper is done .." << endl;
   calculating = false; 
 }
 
+void DistanceMapper::reInitialise(){
+    for(uint i=0; i < points.size(); ++i)
+	delete points[i];
+    points.resize(0);
+    for(uint i=0; i < expts.size(); i++)
+	points.push_back(new dpoint(expts[i], dimensionality, expts.size()));    // 2 dimensional coordinates.. i.e. map to a flat surface .. 
+    initialisePoints();
+    currentDimNo = dimensionality;
+    cout << "DistanceMapper::reinitialised with dimNo : " << dimensionality << " and with point # " << points.size() << endl;
+}
+
+void DistanceMapper::setDim(int dim, int iter){
+    if(dim < 2 || iter < 2){
+	cerr << "DistanceMapper, attempt to set dim to " << dim << "  and iterNo to " << iter << "  failed" << endl;
+	return;
+    }
+    dimensionality = dim;
+    iterationNo = iter;
+    reInitialise();
+}
+
 void DistanceMapper::initialisePoints(){
   calculating = true;
-  for(int i=0; i < points.size(); i++){
+  for(uint i=0; i < points.size(); i++){
     for(int j=0; j < points[i]->dimNo; j++){
       points[i]->coordinates[j] = float(100) * rand()/RAND_MAX;
     }
@@ -399,8 +415,9 @@ void DistanceMapper::updateParentPoints(){
 	return;
     }
     // Otherwise we go throught the points and assign the appropriate values
+    //  cout << "Assigning to the end of parentPoints of size " << parentPoints->size() << endl;
     for(uint i=0; i < parentPoints->back().size() && i < points.size(); ++i){
-//	cout << "calling assignValues " << endl;
+//	cout << "calling assignValues " << i << endl;
 	points[i]->assignValues(parentPoints->back()[i]);
     }
     pointMutex->unlock();
@@ -413,8 +430,23 @@ void DistanceMapper::clonePoints(){
   // manipulate. Because we are using pointers for everything, we will need to copy the thingy.. probably the best way 
   // would be to provide a copy constructor.. -- using = ,, but hmm,, I think a copy command might be better.. 
 //    cout << "clone points .. " << endl;
-  for(int i=0; i < points.size(); i++){
+  for(uint i=0; i < points.size(); i++){
     points[i] = points[i]->copy();    // this doesn't copy the componentVectors, nor the stress, but should be enough.. Note this is could easily lead to memory leaks..
 
   }
+}
+
+void DistanceMapper::reduceDimensionality(){
+//    cout << "My Points : " << endl;
+    for(uint i=0; i < points.size(); ++i){
+	int dno = points[i]->shrinkDimNo(1);
+	//cout << "my point now : " << dno << " dims" << endl;
+    }
+    //   cout << "And the parent points size is " << parentPoints->size() << endl;
+    pointMutex->lock();
+    for(uint i=0; i < parentPoints->back().size(); ++i){
+	int dno = parentPoints->back()[i]->shrinkDimNo(1);
+	//cout << "parent point now : " << (long)parentPoints->back()[i] << "  " << dno << " dims" << endl;
+    }
+    pointMutex->unlock();
 }
