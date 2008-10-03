@@ -33,6 +33,31 @@
 
 using namespace std;    //please forgive me..
 
+struct stressInfo {
+    unsigned int dimNo;
+    unsigned int activeDimNo;
+    vector<float> dimFactors;
+    float stress;
+
+    stressInfo(){
+	dimNo = activeDimNo = 0;
+	stress = 0;
+    }
+    void setStress(int dim_no, float* df, uint ad, float s){
+	dimNo = dim_no;
+	activeDimNo = ad;
+	dimFactors.resize(dimNo);
+	for(uint i=0; i < dimNo; ++i)
+	    dimFactors[i] = df[i];
+	stress = s;
+    }
+    float currentDF(){
+	if(activeDimNo - 1 > 0)
+	    return(dimFactors[activeDimNo - 1]);
+	return(1.0);
+    }
+};
+
 struct componentVector {
     bool attractive;     // is it an attractor or repulsor..
     float* forces;
@@ -110,7 +135,7 @@ struct dpoint {
 class DistanceMapper : public QThread
 {
   public :
-    DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<float>* stressLevels);
+    DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<stressInfo>* stressLevels);
   ~DistanceMapper();  // don't know how much I'll need for these..
   void restart();     // start the mapping process agains. 
   void updatePosition(int i, float x, float y);  
@@ -125,7 +150,7 @@ class DistanceMapper : public QThread
   vector<vector<float> > distances;  // the optimal distances. 
   vector<dpoint*> points;              // the points representing the objects (usually experiments.. )..  
   vector<vector<dpoint*> >* parentPoints;
-  vector<float>* errors;
+  vector<stressInfo>* errors;
   QObject* parent;                 // for updating information.. 
   QMutex* pointMutex;
 

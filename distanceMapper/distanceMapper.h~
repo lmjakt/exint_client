@@ -72,29 +72,30 @@ struct componentVector {
 struct dpoint {
   //vector<float> coordinates;    // the current position in n-dimensional space.
   //vector<float> forceVectors;   // the forces it is subject to... 
-  
-  float* coordinates;
-  float* forceVectors;
-  int dimNo;       // the no of dimensions. --  we have one value for each forceVector.. 
-  
-  componentVector** components;
-  int componentNo;
-  int componentSize;   // memory allocated for components.
-  //  vector<componentVector> components;   // the component vectors that make up the resulting force vectors.. 
-  int index;                    // some kind of identifier..
-  float stress;                 // total amount of stress (absolute).. 
-
-  dpoint();  
-  dpoint(int i, int dimensions, int compNo=100);
-  ~dpoint();
-  
-  float adjustVectors(dpoint* p, float d, bool linear=true);   // given another point, with an optimal distance of d
-                                           // adjust the vectors and return a measure of force in the system.. 
-  float move(float forceMultiplier);            // move the point, reset the force vectors to 0 if reset is true.. return the euclidean distance moved
-  void resetForces();          // set the stress and force vectors to be 0.. 
-  void setPos(vector<float> coords);
+    
+    float* coordinates;
+    float* forceVectors;
+    int dimNo;       // the no of dimensions. --  we have one value for each forceVector.. 
+    
+    componentVector** components;
+    int componentNo;
+    int componentSize;   // memory allocated for components.
+    //  vector<componentVector> components;   // the component vectors that make up the resulting force vectors.. 
+    int index;                    // some kind of identifier..
+    float stress;                 // total amount of stress (absolute).. 
+    
+    dpoint();  
+    dpoint(int i, int dimensions, int compNo=100);
+    ~dpoint();
+    
+    float adjustVectors(dpoint* p, float d, float* dimFactors, bool linear=true);   // given another point, with an optimal distance of d
+    // adjust the vectors and return a measure of force in the system.. 
+    float move(float forceMultiplier);            // move the point, reset the force vectors to 0 if reset is true.. return the euclidean distance moved
+    void resetForces();          // set the stress and force vectors to be 0.. 
+    void setPos(vector<float> coords);
     dpoint* copy(bool includeComponents=false);
     void assignValues(dpoint* p);  // assign values to p from this   
+    int shrinkDimNo(uint s);   // shrinks the number of dimensions by s.
 
   private :
   //void addComponent(float* f, int n, bool a);
@@ -114,6 +115,8 @@ class DistanceMapper : public QThread
   void restart();     // start the mapping process agains. 
   void updatePosition(int i, float x, float y);  
   void initialisePoints();       // find some nice random positions for the points..
+  void reInitialise();
+  void setDim(int dim, int iter);
 
   bool calculating; 
   bool initOK;        // so we can check if it initialised ok.. 
@@ -130,6 +133,9 @@ class DistanceMapper : public QThread
                                   // to move distance.. 
   float totalDistance;
   int dimensionality;
+  int currentDimNo;
+  int iterationNo;
+  float* dimFactors;   // used for squeezing dimensions.. should have the size of dimensionality.. 
   // some functions..
   // don't need because the points will cheat if in the same point.. start all points at the origin.. 
 
@@ -138,6 +144,8 @@ class DistanceMapper : public QThread
   void resetPoints();             // just go through and reset the points.. 
   void updateParentPoints();
   void clonePoints();
+  void reduceDimensionality();   // just reduce by 1.
+  void resetDimFactors();        // deletes dimFactors and then resets them to dimensionality.. 
 
   protected :
     void run();                 // the main function, essentially iterates through initialise points and 

@@ -27,17 +27,18 @@
 
 #include <qwidget.h>
 #include <vector>
+#include "distanceMapper.h"
 
 class StressPlotter : public QWidget
 {
     Q_OBJECT
 	public :
 	StressPlotter(QWidget* parent=0, const char* name=0);
-    void setData(std::vector<float> stress);
+    void setData(std::vector<stressInfo> stress);
     
     private :
 	void paintEvent(QPaintEvent* e);
-    std::vector<float> values;
+    std::vector<stressInfo> values;
     float maxValue;
     float minValue;
 

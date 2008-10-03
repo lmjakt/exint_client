@@ -214,7 +214,7 @@ void dpoint::resetForces(){              /// THIS GIVES RISE TO A MEMORY LEAK IF
   //components.resize(0);
 }
 
-DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<float>* stressLevels){
+DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<stressInfo>* stressLevels){
   //cout << "beginning of distance mapper constructor " << endl;
   calculating = false;
   expts = expI;
@@ -333,25 +333,26 @@ void DistanceMapper::run(){
 
   //bool keepOnGoing = true;
   bool linear = true;
-  int halfPeriod = iterationNo;
   int mappingPeriods = 1 + (currentDimNo - 2); 
   mappingPeriods = mappingPeriods < 1 ? 1 : mappingPeriods;
   
   pointMutex->lock();
-  errors->resize(halfPeriod * mappingPeriods);
-  errors->assign(halfPeriod * mappingPeriods, 0.0);
+  errors->resize(iterationNo * mappingPeriods);
+//  errors->assign(iterationNo * mappingPeriods, 0.0);
   pointMutex->unlock();
 
 //  while(keepOnGoing){     // initially just keep running.. until we add some control factors into the situation..
   for(int i=0; i < mappingPeriods; ++i){
-      for(int j=0; j < halfPeriod; ++j){
-	  //int half = generationCounter / halfPeriod;
+      for(int j=0; j < iterationNo; ++j){
+	  //int half = generationCounter / iterationNo;
 	  // don't swap to non linear.. 
 	  //    linear = !(half % 2);
 	  
 	  float stress = adjustVectors(linear);
 	  pointMutex->lock();
-	  (*errors)[generationCounter] = stress;
+	  //(*errors)[generationCounter] = stress;	  
+//	  (*errors)[i * iterationNo + j].stress = stress;
+	  (*errors)[i * iterationNo + j].setStress(dimensionality, dimFactors, currentDimNo, stress);
 	  pointMutex->unlock();
 	  // update the parent..
 	  if(0){
@@ -372,12 +373,13 @@ void DistanceMapper::run(){
 	  cout << endl;
 	  // set the last dimension dimFactor to something reasonable.. 
 	  if(currentDimNo > 2)
-	      dimFactors[currentDimNo-1] = 1.0 - (float(j) / (float)halfPeriod); 
+	      dimFactors[currentDimNo-1] = 1.0 - (float(j) / (float)iterationNo); 
 
       }
       if(currentDimNo > 2){
 	  cout << "\nReducing dimensionality\n" << endl;
-	  reduceDimensionality();
+	  dimFactors[currentDimNo-1] = 0.0;
+//	  reduceDimensionality();
 	  currentDimNo--;
       }
   }
