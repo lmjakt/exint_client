@@ -30,6 +30,7 @@
 #include <qmutex.h>
 #include <iostream>
 #include <string.h>
+#include <map>
 
 using namespace std;    //please forgive me..
 
@@ -135,13 +136,17 @@ struct dpoint {
 class DistanceMapper : public QThread
 {
   public :
-    DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<stressInfo>* stressLevels);
+      enum DimReductionType {
+	  STARBURST, GRADUAL_SERIAL, GRADUAL_PARALLEL
+      };
+
+    DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<stressInfo>* stressLevels, DimReductionType drt);
   ~DistanceMapper();  // don't know how much I'll need for these..
   void restart();     // start the mapping process agains. 
   void updatePosition(int i, float x, float y);  
   void initialisePoints();       // find some nice random positions for the points..
   void reInitialise();
-  void setDim(int dim, int iter);
+  void setDim(int dim, int iter, int drt);
 
   bool calculating; 
   bool initOK;        // so we can check if it initialised ok.. 
@@ -161,6 +166,8 @@ class DistanceMapper : public QThread
   int currentDimNo;
   int iterationNo;
   float* dimFactors;   // used for squeezing dimensions.. should have the size of dimensionality.. 
+  DimReductionType dimReductionType;
+  map<int, DimReductionType> drtMap;  // This seems a bit silly but I dont think I can do (DimReductType)int .. 
   // some functions..
   // don't need because the points will cheat if in the same point.. start all points at the origin.. 
 
@@ -169,7 +176,7 @@ class DistanceMapper : public QThread
   void resetPoints();             // just go through and reset the points.. 
   void updateParentPoints();
   void clonePoints();
-  void reduceDimensionality();   // just reduce by 1.
+  void reduceDimensionality(DimReductionType drt, int it_no);   // adjust dimFactors by some means..
   void resetDimFactors();        // deletes dimFactors and then resets them to dimensionality.. 
 
   protected :

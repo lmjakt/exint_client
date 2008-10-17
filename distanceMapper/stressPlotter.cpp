@@ -46,7 +46,7 @@ void StressPlotter::setData(vector<stressInfo> stress){
     maxValue = 0;
     if(values.size())
 	minValue = values[0].stress;
-    for(uint i= values.size()/2 ; i < values.size(); ++i){
+    for(uint i= values.size()/10 ; i < values.size(); ++i){
 	maxValue = maxValue > values[i].stress ? maxValue : values[i].stress;
 	minValue = minValue < values[i].stress ? minValue : values[i].stress;
     }
@@ -70,7 +70,7 @@ void StressPlotter::paintEvent(QPaintEvent* e){
 	int x = (w * i) / values.size();
 	int y =  h - (float(h) *  values[i].stress / maxValue);
 	int dimY = height() - height() * values[i].currentDF();
-	p.setPen(QPen(QColor(255, 0, 0), 1));
+	p.setPen(QPen(QColor(100, 0, 30), 1));
 	p.drawLine(x, height(), x, dimY);
 	p.setPen(QPen(QColor(255, 255, 255), 1));
 	p.drawEllipse(x, y, 4, 4);

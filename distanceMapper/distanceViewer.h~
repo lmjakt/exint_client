@@ -73,7 +73,7 @@ class DistanceViewer : public QWidget
   vector<vector<dpoint*> > points;          // keep points in here.. receive from the thingy. 
                                            // keep whole history in here, so that I can replay things..
   vector<dpoint*> localPoints;             // a copy of the points that is never touched by the mapper.
-  vector<float> stressValues;              // to monitor the reduction in error... 
+  vector<stressInfo> stressValues;              // to monitor the reduction in error... 
   //vector<mapDescription> soms;             // self organising maps.. of some sort.. 
   vector<vector<float> > distances;
   vector<int> experiments;                 // might as well keep a copy in here.. it's easy enough.. 

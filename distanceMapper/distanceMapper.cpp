@@ -152,6 +152,9 @@ void dpoint::addComponent(componentVector* cv){
     components = newComps;
 }
 
+// Note that dimFactors has to have the same size as the number of dimensions
+// or to be completely correct has to be as large as dimNo or we'll end up
+// getting out of bounds values
 float dpoint::adjustVectors(dpoint* p, float d, float* dimFactors, bool linear){
   if(dimNo != p->dimNo){
     cerr << "point coordinate mismatch size thingy : " << endl;
@@ -214,7 +217,7 @@ void dpoint::resetForces(){              /// THIS GIVES RISE TO A MEMORY LEAK IF
   //components.resize(0);
 }
 
-DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<stressInfo>* stressLevels){
+DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<stressInfo>* stressLevels, DimReductionType drt){
   //cout << "beginning of distance mapper constructor " << endl;
   calculating = false;
   expts = expI;
@@ -229,6 +232,10 @@ DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int d
   // set the dimFactors to 1.
   // Note this will crash if dimensionality is less than 0. 
   dimFactors = 0;
+  dimReductionType = drt;
+  drtMap.insert(make_pair((int)STARBURST, STARBURST));
+  drtMap.insert(make_pair((int)GRADUAL_SERIAL, GRADUAL_SERIAL));
+  drtMap.insert(make_pair((int)GRADUAL_PARALLEL, GRADUAL_PARALLEL));
   resetDimFactors();
   
 
@@ -350,12 +357,8 @@ void DistanceMapper::run(){
 	  cout << "\t" << dimFactors[k];
       cout << endl;
       
-      // Squeeze all but the first two dimension.. 
-      for(int j = 2; j < dimensionality; ++j){
-	  dimFactors[j] -=  (1.2/(float)iterationNo);  // this means the numbers go down to 0 a bit quicker.. 
-	  dimFactors[j] = dimFactors[j] > 0 ? dimFactors[j] : 0;
-      }
-      
+      // Squeeze or eliminate dimensions..
+      reduceDimensionality(dimReductionType, i);
   }
   cout << "distanceMapper is done .." << endl;
   calculating = false; 
@@ -373,10 +376,15 @@ void DistanceMapper::reInitialise(){
     cout << "DistanceMapper::reinitialised with dimNo : " << dimensionality << " and with point # " << points.size() << endl;
 }
 
-void DistanceMapper::setDim(int dim, int iter){
+void DistanceMapper::setDim(int dim, int iter, int drt){
     if(dim < 2 || iter < 2){
 	cerr << "DistanceMapper, attempt to set dim to " << dim << "  and iterNo to " << iter << "  failed" << endl;
 	return;
+    }
+    if(drtMap.count(drt)){
+	dimReductionType = drtMap[drt];
+    }else{
+	cerr << "DistanceMapper::setDim unknown drt : " << drt << endl;
     }
     dimensionality = dim;
     iterationNo = iter;
@@ -425,20 +433,41 @@ void DistanceMapper::clonePoints(){
 }
 
 // This doesn't seem to do anything at all. Should remove it.. 
-void DistanceMapper::reduceDimensionality(){
-//    cout << "My Points : " << endl;
-//    for(uint i=0; i < points.size(); ++i){
-//	int dno = points[i]->shrinkDimNo(1);
-	//cout << "my point now : " << dno << " dims" << endl;
-//    }
-    //   cout << "And the parent points size is " << parentPoints->size() << endl;
-//    pointMutex->lock();
-//    for(uint i=0; i < parentPoints->back().size(); ++i){
-//	int dno = parentPoints->back()[i]->shrinkDimNo(1);
-//	//cout << "parent point now : " << (long)parentPoints->back()[i] << "  " << dno << " dims" << endl;
-//    }
-//    pointMutex->unlock();
+// drt defines how we reduce the dimensionality
+// it_no is the current iteration and we use that to define whether
+// we reduce the dimensionality or not
+void DistanceMapper::reduceDimensionality(DimReductionType drt, int it_no){
+    float reductionFactor = 1.2;
+    
+    if(drt == GRADUAL_PARALLEL){
+	for(int i=2; i < dimensionality; ++i){
+	    dimFactors[i] -= reductionFactor/(float)iterationNo;
+	    dimFactors[i] = dimFactors[i] > 0 ? dimFactors[i] : 0;
+	}
+	return;
+    }
+    // Else we need to reduce the dimNo...
+    currentDimNo = (int)ceilf( (float)(iterationNo - it_no) / ( (float)iterationNo / (float)dimensionality) );
+    currentDimNo = currentDimNo < 2 ? 2 : currentDimNo;
+
+    switch(drt){
+	case STARBURST:
+	    if(currentDimNo > 2)
+		dimFactors[currentDimNo-1] = 0;
+	    break;
+	case GRADUAL_SERIAL:
+	    dimFactors[currentDimNo-1] -= reductionFactor / ((float)iterationNo / (float)dimensionality);
+	    break;
+	default :
+	    cerr << "ReduceDimensionality unknown DimReductionType : " << drt << endl;
+    }
+    // and then make sure that dimFactors 0, 1 are 1 and that none are less than 0
+    for(int i=0; i < 2 && i < dimensionality; ++i)
+	dimFactors[i] = 1.0;
+    for(int i=2; i < dimensionality; ++i)
+	dimFactors[i] = dimFactors[i] > 0 ? dimFactors[i] : 0;
 }
+
 
 void DistanceMapper::resetDimFactors(){
     delete dimFactors;

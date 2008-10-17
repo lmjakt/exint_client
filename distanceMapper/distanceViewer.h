@@ -38,6 +38,7 @@
 #include <qtimer.h>
 #include <qstring.h>
 #include <qspinbox.h>
+#include <qcombobox.h>
 #include <vector>
 
 using namespace std;
@@ -97,6 +98,7 @@ class DistanceViewer : public QWidget
 
   QSpinBox* dimSpinner;
   QSpinBox* iterSpinner;
+  QComboBox* dimReductTypeBox;
   signals :
     void compareCells(vector<int>, vector<int>);
   void setCoordinates(vector<PointCoordinate>);

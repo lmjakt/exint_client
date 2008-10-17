@@ -329,59 +329,33 @@ void DistanceMapper::resetPoints(){
 
 void DistanceMapper::run(){
   calculating = true;
-  int generationCounter = 0;
-
-  //bool keepOnGoing = true;
   bool linear = true;
-  int mappingPeriods = 1 + (currentDimNo - 2); 
-  mappingPeriods = mappingPeriods < 1 ? 1 : mappingPeriods;
   
   pointMutex->lock();
-  errors->resize(iterationNo * mappingPeriods);
-//  errors->assign(iterationNo * mappingPeriods, 0.0);
+  errors->resize(iterationNo);
   pointMutex->unlock();
-
-//  while(keepOnGoing){     // initially just keep running.. until we add some control factors into the situation..
-  for(int i=0; i < mappingPeriods; ++i){
-      for(int j=0; j < iterationNo; ++j){
-	  //int half = generationCounter / iterationNo;
-	  // don't swap to non linear.. 
-	  //    linear = !(half % 2);
-	  
-	  float stress = adjustVectors(linear);
-	  pointMutex->lock();
-	  //(*errors)[generationCounter] = stress;	  
-//	  (*errors)[i * iterationNo + j].stress = stress;
-	  (*errors)[i * iterationNo + j].setStress(dimensionality, dimFactors, currentDimNo, stress);
-	  pointMutex->unlock();
-	  // update the parent..
-	  if(0){
-	      pointMutex->lock();
-	      parentPoints->push_back(points);     // this should cause a copy if I understand correctly..
-	      pointMutex->unlock();
-	      clonePoints();     // need to make sure we don't touch the same vectors again.. 
-	  }else{
-	      updateParentPoints();
-	  }
-//	  cout << "DistanceMapper generation : " << generationCounter++ << " stress : " << stress  // << "  moved : " << distanceMoved
-//	       << "   total distance : " << totalDistance << "   Linear is : " << linear << endl;
-	  movePoints();
-	  resetPoints();
-	  cout << "Stress: " << stress << "  dim:";
-	  for(int k =0; k < dimensionality; ++k)
-	      cout << "\t" << dimFactors[k];
-	  cout << endl;
-	  // set the last dimension dimFactor to something reasonable.. 
-	  if(currentDimNo > 2)
-	      dimFactors[currentDimNo-1] = 1.0 - (float(j) / (float)iterationNo); 
-
+  
+  for(int i=0; i < iterationNo; ++i){
+      float stress = adjustVectors(linear);
+      pointMutex->lock();
+      (*errors)[i].setStress(dimensionality, dimFactors, currentDimNo, stress);
+      pointMutex->unlock();
+      // update the parent..
+      updateParentPoints();
+      
+      movePoints();
+      resetPoints();
+      cout << "Stress: " << stress << "  dim:";
+      for(int k =0; k < dimensionality; ++k)
+	  cout << "\t" << dimFactors[k];
+      cout << endl;
+      
+      // Squeeze all but the first two dimension.. 
+      for(int j = 2; j < dimensionality; ++j){
+	  dimFactors[j] -=  (1.2/(float)iterationNo);  // this means the numbers go down to 0 a bit quicker.. 
+	  dimFactors[j] = dimFactors[j] > 0 ? dimFactors[j] : 0;
       }
-      if(currentDimNo > 2){
-	  cout << "\nReducing dimensionality\n" << endl;
-	  dimFactors[currentDimNo-1] = 0.0;
-//	  reduceDimensionality();
-	  currentDimNo--;
-      }
+      
   }
   cout << "distanceMapper is done .." << endl;
   calculating = false; 
@@ -394,6 +368,7 @@ void DistanceMapper::reInitialise(){
     for(uint i=0; i < expts.size(); i++)
 	points.push_back(new dpoint(expts[i], dimensionality, expts.size()));    // 2 dimensional coordinates.. i.e. map to a flat surface .. 
     initialisePoints();
+    resetDimFactors();
     currentDimNo = dimensionality;
     cout << "DistanceMapper::reinitialised with dimNo : " << dimensionality << " and with point # " << points.size() << endl;
 }
@@ -405,7 +380,7 @@ void DistanceMapper::setDim(int dim, int iter){
     }
     dimensionality = dim;
     iterationNo = iter;
-    resetDimFactors();
+//    resetDimFactors();
     reInitialise();
 }
 
@@ -449,19 +424,20 @@ void DistanceMapper::clonePoints(){
   }
 }
 
+// This doesn't seem to do anything at all. Should remove it.. 
 void DistanceMapper::reduceDimensionality(){
 //    cout << "My Points : " << endl;
-    for(uint i=0; i < points.size(); ++i){
-	int dno = points[i]->shrinkDimNo(1);
+//    for(uint i=0; i < points.size(); ++i){
+//	int dno = points[i]->shrinkDimNo(1);
 	//cout << "my point now : " << dno << " dims" << endl;
-    }
+//    }
     //   cout << "And the parent points size is " << parentPoints->size() << endl;
-    pointMutex->lock();
-    for(uint i=0; i < parentPoints->back().size(); ++i){
-	int dno = parentPoints->back()[i]->shrinkDimNo(1);
-	//cout << "parent point now : " << (long)parentPoints->back()[i] << "  " << dno << " dims" << endl;
-    }
-    pointMutex->unlock();
+//    pointMutex->lock();
+//    for(uint i=0; i < parentPoints->back().size(); ++i){
+//	int dno = parentPoints->back()[i]->shrinkDimNo(1);
+//	//cout << "parent point now : " << (long)parentPoints->back()[i] << "  " << dno << " dims" << endl;
+//    }
+//    pointMutex->unlock();
 }
 
 void DistanceMapper::resetDimFactors(){
