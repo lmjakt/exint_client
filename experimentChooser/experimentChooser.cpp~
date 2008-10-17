@@ -107,6 +107,7 @@ void ExperimentChooser::updateExperiments(multimap<float, exptInfo> info){
   multimap<float, exptInfo>::iterator it;
   vector<int> tempSelection;             // signal to update the vector.. 
   for(it = info.begin(); it != info.end(); it++){
+      cout << "Experiment : " << (*it).second.shortName << "\t" << (*it).second.dbaseIndex << "\t" << (*it).second.index << endl;
     eWidgets.push_back(new ExperimentWidget((*it).second, frame));
     grid->addWidget(eWidgets[eWidgets.size()-1]);
     connect(eWidgets[eWidgets.size()-1], SIGNAL(includeMyIndex(int, bool)), this, SLOT(selectionChanging(int, bool)) );
@@ -115,7 +116,9 @@ void ExperimentChooser::updateExperiments(multimap<float, exptInfo> info){
     map<int, bool>::iterator bit;
     for(bit = (*it).second.chips.begin(); bit != (*it).second.chips.end(); bit++){
 	chips.insert((*bit).first);
+	cout << "\t" << (*bit).first << ":" << (*bit).second;
     }
+    cout << endl;
     // do some connects later on..
   }
   // Emit the index, and hope that it connects to the vector in client.. 

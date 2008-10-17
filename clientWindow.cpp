@@ -398,7 +398,7 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   connect(probeData, SIGNAL(toggled(bool)), this, SLOT(toggleDataWindow(bool)) );
 
 
-  QPushButton* experimentChoices= new QPushButton("Expt. Choice", this, "exptchoice");
+  QPushButton* experimentChoices= new QPushButton("Samples", this, "samples");
   experimentChoices->setToggleButton(true);
   experimentChoices->setOn(false);              // connect it later on to something.. 
   connect(experimentChoices, SIGNAL(toggled(bool)), this, SLOT(toggleExperimentWindow(bool)) );
@@ -470,7 +470,7 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   connect(client, SIGNAL(newExperimentTrace(vector<tracePoint>)), exptComparisons, SLOT(newTrace(vector<tracePoint>)) );
   connect(exptComparisons, SIGNAL(setCoordinates(vector<PointCoordinate>)), this, SLOT(setCoordinates(vector<PointCoordinate>)) );
 
-  QPushButton* compareExperiments = new QPushButton("Compare Expts", this, "compareExperiments");
+  QPushButton* compareExperiments = new QPushButton("Compare Samples", this, "compareSamples");
   connect(compareExperiments, SIGNAL(clicked()), exptComparisons, SLOT(show()) );
   connect(exptComparisons, SIGNAL(doFullCompare()), client, SLOT(compareExperiments()) );
   connect(exptComparisons, SIGNAL(doFlatCompare(float, float)), client, SLOT(flatCompareExperiments(float, float)) );

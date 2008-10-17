@@ -44,7 +44,7 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   updateOrderChooser = true;
 
   QVBoxLayout* base = new QVBoxLayout(this);
-  setCaption("Experiments");
+  setCaption("Samples");
 
   QScrollView* scroll = new QScrollView(this);
   frame = new QFrame(scroll->viewport());

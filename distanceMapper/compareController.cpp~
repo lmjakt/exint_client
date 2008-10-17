@@ -131,8 +131,8 @@ void CompareController::newDistances(exptDistanceInfo info){
     flatDists.insert(viewer);
     flatBox->addWidget(viewer);
   }else{
-    fullDists.insert(viewer);
-    fullBox->addWidget(viewer);
+      fullDists.insert(viewer);
+      fullBox->addWidget(viewer);
   }
   viewer->show();
 }
@@ -203,6 +203,7 @@ void CompareController::readPhylipDistances(){
   // which at this state if everything went well I can make a thingy... and insert.. but I need to make some more stuff.. first..
   //
   DistanceViewer* viewer = new DistanceViewer(memberInts, values, infile, this);
+  connect(viewer, SIGNAL(deleteMe()), this, SLOT(deleteSender()) );
   phylipDists.insert(viewer);
   phylipBox->addWidget(viewer);
   viewer->show();
@@ -269,6 +270,7 @@ void CompareController::compareFlat(){
 }
 
 void CompareController::deleteSender(){
+    cout << "deleting sender" << endl;
   const QObject* obj = sender();
   delete obj;
 }

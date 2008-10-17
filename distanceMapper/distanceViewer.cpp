@@ -100,9 +100,9 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   QLabel* dimLabel = new QLabel("Dim no.", this);
   QLabel* iterLabel = new QLabel("Iterations", this);
   dimSpinner = new QSpinBox(2, 10, 1, this);
-  iterSpinner = new QSpinBox(20, 1000, 1, this);
-  dimSpinner->setValue(2);
-  iterSpinner->setValue(100);
+  iterSpinner = new QSpinBox(20, 10000, 1, this);
+  dimSpinner->setValue(4);
+  iterSpinner->setValue(500);
 
   cout << "start button made, setting up the layout " << endl;
   // set up the layout..
@@ -158,6 +158,7 @@ DistanceViewer::~DistanceViewer(){
 }
 
 void DistanceViewer::start(){
+    mapper->wait();
     deletePoints();
     mapper->setDim(dimSpinner->value(), iterSpinner->value(), dimReductTypeBox->currentItem());
     cout << "start called " << endl;
