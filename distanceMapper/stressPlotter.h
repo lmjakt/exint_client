@@ -26,6 +26,7 @@
 #define STRESSPLOTTER_H
 
 #include <qwidget.h>
+#include <qpainter.h>
 #include <vector>
 #include "distanceMapper.h"
 
@@ -38,6 +39,7 @@ class StressPlotter : public QWidget
     
     private :
 	void paintEvent(QPaintEvent* e);
+    void drawStress(QPainter* p, int w, int h);
     std::vector<stressInfo> values;
     float maxValue;
     float minValue;

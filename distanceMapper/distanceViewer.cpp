@@ -75,8 +75,8 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
 
   QLabel* sodLabel = new QLabel("Self Organising Deltoids", this, "sodLabel");
 
-  QPushButton* replayButton = new QPushButton("Replay", this, "replayButton");
-  connect(replayButton, SIGNAL(clicked()), this, SLOT(replay()) );
+  //QPushButton* replayButton = new QPushButton("Replay", this, "replayButton");
+  //connect(replayButton, SIGNAL(clicked()), this, SLOT(replay()) );
 
   QPushButton* continueButton = new QPushButton("Continue", this, "continueButton");
   connect(continueButton, SIGNAL(clicked()), this, SLOT(continueMapping()) );   // is this legal ?? 
@@ -111,7 +111,8 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   QHBoxLayout* sodButtons = new QHBoxLayout();
   vbox->addWidget(sodLabel);
   vbox->addLayout(sodButtons);
-  sodButtons->addWidget(replayButton);
+//  sodButtons->addWidget(replayButton);
+  sodButtons->addWidget(startButton);
   sodButtons->addWidget(continueButton);
   sodButtons->addWidget(dimReductTypeBox);
   //sodButtons->addWidget(restartButton);
@@ -125,7 +126,6 @@ DistanceViewer::DistanceViewer(vector<int> expI, vector<vector<float> > d, QStri
   bottomRow->addWidget(iterLabel);
   bottomRow->addWidget(iterSpinner);
   bottomRow->addStretch();
-  bottomRow->addWidget(startButton);
   cout << "and the start Button added, must be the drawing of these that causes the problem " << endl;
   //  resize(500, 400);
   

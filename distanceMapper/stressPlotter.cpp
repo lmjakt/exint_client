@@ -62,22 +62,42 @@ void StressPlotter::paintEvent(QPaintEvent* e){
     QPixmap pix(w, h);
     pix.fill(QColor(0, 0, 0));
     QPainter p(&pix);
-    p.setPen(QPen(QColor(255, 255, 255), 1));
-    p.setBrush(Qt::NoBrush);
+    drawStress(&p, w, h);
+    
+//     p.setPen(QPen(QColor(255, 255, 255), 1));
+//     p.setBrush(Qt::NoBrush);
+//     for(uint i= 0; i < values.size(); ++i){
+// 	if(!values[i].stress)
+// 	    continue;
+// 	int x = (w * i) / values.size();
+// 	int y =  h - (float(h) *  values[i].stress / maxValue);
+// 	int dimY = height() - height() * values[i].currentDF();
+// 	p.setPen(QPen(QColor(100, 0, 30), 1));
+// 	p.drawLine(x, height(), x, dimY);
+// 	p.setPen(QPen(QColor(255, 255, 255), 1));
+// 	p.drawEllipse(x, y, 4, 4);
+// //	if(values.stress[i])
+// //	    cout << "stress : " << values.stress[i] << " p: " << i << "  --> " << y << ", " << x << endl;
+	
+//     }
+    bitBlt(this, 0, 0, &pix, 0, 0);
+}
+
+void StressPlotter::drawStress(QPainter* p, int w, int h){
+    float r = maxValue - minValue;
+    r = (r == 0) ? maxValue : r;
+    // draw some kind of background..
+    p->setPen(QPen(QColor(255, 255, 255), 1));
+    p->setBrush(Qt::NoBrush);
     for(uint i= 0; i < values.size(); ++i){
 	if(!values[i].stress)
 	    continue;
 	int x = (w * i) / values.size();
-	int y =  h - (float(h) *  values[i].stress / maxValue);
-	int dimY = height() - height() * values[i].currentDF();
-	p.setPen(QPen(QColor(100, 0, 30), 1));
-	p.drawLine(x, height(), x, dimY);
-	p.setPen(QPen(QColor(255, 255, 255), 1));
-	p.drawEllipse(x, y, 4, 4);
-//	if(values.stress[i])
-//	    cout << "stress : " << values.stress[i] << " p: " << i << "  --> " << y << ", " << x << endl;
-	
+	int y =  h - (int)(float(h) *  values[i].stress / maxValue);
+	int dimY = (int)(h - h * values[i].currentDF());
+	p->setPen(QPen(QColor(100, 0, 30), 1));
+	p->drawLine(x, height(), x, dimY);
+	p->setPen(QPen(QColor(255, 255, 255), 1));
+	p->drawEllipse(x, y, 4, 4);
     }
-    bitBlt(this, 0, 0, &pix, 0, 0);
 }
-
