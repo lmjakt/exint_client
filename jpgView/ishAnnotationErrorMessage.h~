@@ -1,8 +1,0 @@
-#ifndef ERRORMESSAGE_H
-#define ERRORMESSAGE_H
-
-#include "../dataStructs.h"
-#include <qdialog.h>
-#include <qstring.h>
-
-class 

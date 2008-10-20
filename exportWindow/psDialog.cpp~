@@ -1,8 +1,0 @@
-#include "psDialog.h"
-
-PSDialog::PSDialog(ExportWidget* expWidget, QWidget* parent, const char* name, bool modal)
-    : QFileDialog(parent, name, modal)
-{
-    addRightWidget(expWidget);
-}
-
