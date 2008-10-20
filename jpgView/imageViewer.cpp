@@ -355,6 +355,7 @@ void ImageViewer::removeImages(int index){
 }
 
 void ImageViewer::moveWidget(int dx, int dy){
+    dx=dy;  // to remove the warning.. 
   //  QWidget* image = (QWidget*)sender();
   //image->move(image->x() + dx, image->y()+dy);
 }

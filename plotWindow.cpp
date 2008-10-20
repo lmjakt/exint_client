@@ -129,13 +129,13 @@ void PlotWindow::plot(probe_set* pset, QPainter* p, bool rawData){
   vector<int> experimentIds;  // got a bit confused.. 
 
   map<int, int>::iterator it;
-  for(int i=0; i < exptSelection->size(); i++){     // do for current experiment selection, makes sense,, 
+  for(uint i=0; i < exptSelection->size(); i++){     // do for current experiment selection, makes sense,, 
     it = pset->exptLookup.find((*exptSelection)[i]);
     if(it != pset->exptLookup.end()){
       int n = (*it).second;     // n being the value we need to take from the current index..
       experiments.push_back(n);
       experimentIds.push_back((*exptSelection)[i]);
-      for(int j=0; j < pset->probes.size(); j++){
+      for(uint j=0; j < pset->probes.size(); j++){
 	rawValues[j].push_back(pset->probes[j][n]);
       }
     }
@@ -161,18 +161,18 @@ void PlotWindow::plot(){
   
 
   map<int, int>::iterator it;
-  for(int i=0; i < exptSelection->size(); i++){
+  for(uint i=0; i < exptSelection->size(); i++){
     it = p.exptLookup.find((*exptSelection)[i]);
     if(it != p.exptLookup.end()){
       int n = (*it).second;     // n being the value we need to take from the current index..
-      for(int j=0; j < markedExperiments->size(); j++){
+      for(uint j=0; j < markedExperiments->size(); j++){
 	if((*markedExperiments)[j] == ((*exptSelection)[i])){
 	  mExperiments.push_back(experimentIds.size()); // the position of the marked thingy.. 
 	}
       }
       experiments.push_back(n);
       experimentIds.push_back((*exptSelection)[i]);
-      for(int j=0; j < p.probes.size(); j++){
+      for(uint j=0; j < p.probes.size(); j++){
 	rawValues[j].push_back(p.probes[j][n]);
       }
     }

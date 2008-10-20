@@ -315,7 +315,7 @@ class RegionDrawing {       // contains a load of boxes, and some values regardi
   }
   ~RegionDrawing(){
     //cout << "Region Drawer destructor boxes size is : " << boxes.size() << endl;
-    for(int i=0; i < boxes.size(); i++){
+    for(uint i=0; i < boxes.size(); i++){
       //cout << " ------ deleting i : " << i << endl;
       delete boxes[i];
     }
@@ -399,7 +399,7 @@ class LocalRegionWidget : public QWidget
   void setSource(vector<chromRegion>* r);
   void setPSet(int p){
     currentProbeSet = p;
-    for(int i=0; i < drawings.size(); i++){
+    for(uint i=0; i < drawings.size(); i++){
       drawings[i]->setPSet(p);
     }
     newSize(width(), height(), true);    

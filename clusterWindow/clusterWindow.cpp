@@ -111,12 +111,13 @@ void ClusterWindow::newClusterSet(clusterSet* newSet){
   QString label;
   //  label.setNum(clusterSets->size());
   //label.prepend("Set ");
-  label.sprintf("Set %d (%d)", clusterSets->size(), newSet->indices.size());
+  label.sprintf("Set %d (%d)", (int)clusterSets->size(), (int)newSet->indices.size());
   ClusterListItem* item = new ClusterListItem(newSet, clusterSets->size(), clusterList);
   //  QListViewItem* item = new QListViewItem(clusterList, label);
-  for(int i=0; i < newSet->indices.size(); i++){
+  for(uint i=0; i < newSet->indices.size(); i++){
     if(newSet->indices[i].size()){
-      ClusterListItem* clusterItem = new ClusterListItem(newSet, i, item);
+	// This gives a warning as unused item. However clusterItem is used.
+	ClusterListItem* clusterItem = new ClusterListItem(newSet, i, item);
     }
   }
   

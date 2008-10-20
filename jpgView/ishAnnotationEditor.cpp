@@ -234,7 +234,7 @@ void IshAnnotationEditor::setData(ishProbeData data){
   int textCounter = 1;
   cout << "textWidgets size is now.. " << textWidgets.size() << endl;
   for(it = data.textAnnotation.begin(); it != data.textAnnotation.end(); it++){
-    if(textCounter > textWidgets.size()){
+    if(textCounter > (int)textWidgets.size()){
       cout << "making new textWidget " << endl;
       textWidgets.push_back(new TextWidget((*it).second, (*it).first, ((*it).second.userId != *myId), this));
       connect(textWidgets[textCounter-1], SIGNAL(updateData(ish_annotation)), this, SIGNAL(pleaseUpdateText(ish_annotation)) );
@@ -251,7 +251,7 @@ void IshAnnotationEditor::setData(ishProbeData data){
     textCounter++;
   }
   // and hide any we don't use..
-  for(int i = data.textAnnotation.size(); i < textWidgets.size(); i++){
+  for(uint i = data.textAnnotation.size(); i < textWidgets.size(); i++){
     textWidgets[i]->hide();
   }
 

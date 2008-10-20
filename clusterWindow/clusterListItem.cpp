@@ -36,7 +36,7 @@ ClusterListItem::ClusterListItem(clusterSet* cs, int i, QListViewItem* parent) :
   cSet = cs;
   QString label;
   int size = 0;
-  if(i < cs->indices.size() && i >= 0){
+  if(i < (int)cs->indices.size() && i >= 0){
     size = cs->indices[i].size();
   }
   label.sprintf("cluster %d members %d ", i, size);

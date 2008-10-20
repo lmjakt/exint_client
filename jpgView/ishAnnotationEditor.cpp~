@@ -1,3 +1,27 @@
+//Copyright Notice
+/*
+    eXintegrator integrated expression analysis system
+    Copyright (C) 2004  Martin Jakt & Okada Mitsuhiro
+  
+    This file is part of the eXintegrator integrated expression analysis system. 
+    eXintegrator is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version. 
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+  
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    PS. If you can think of a better name, please let me know...
+*/
+//End Copyright Notice
+
 #include "ishAnnotationEditor.h"
 #include "ishTextEntry.h"
 #include "ishFloatEntry.h"
@@ -213,6 +237,7 @@ void IshAnnotationEditor::setData(ishProbeData data){
     if(textCounter > textWidgets.size()){
       cout << "making new textWidget " << endl;
       textWidgets.push_back(new TextWidget((*it).second, (*it).first, ((*it).second.userId != *myId), this));
+      connect(textWidgets[textCounter-1], SIGNAL(updateData(ish_annotation)), this, SIGNAL(pleaseUpdateText(ish_annotation)) );
       cout << "and adding it ot the textBox " << endl;
       textBox->addWidget(textWidgets[textCounter-1]);
       cout << "and calling show on it " << endl;
@@ -267,6 +292,12 @@ void IshAnnotationEditor::setData(ishProbeData data){
   // and to set which rows are editable and which rows are not depending on identity.. but
   // apart from that, I think we are pretty much ok..
 }
+
+// void IshAnnotationEditor::textUpdate(ishTextInsert data){
+//   data.ishProbeId = currentData.probeId;
+//   data.fieldNameNew = false;
+//   emit pleaseUpdateText(data);
+// }
 
 void IshAnnotationEditor::textAnnote(ishTextInsert data){
   data.ishProbeId = currentData.probeId;     // hmm, I think that we could crash here.. hmm, it's probably ok..

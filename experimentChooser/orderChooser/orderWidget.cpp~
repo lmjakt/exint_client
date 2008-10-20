@@ -99,46 +99,6 @@ void OrderWidget::paintEvent(QPaintEvent* e){
   p.drawLine(hmargin, height()/2, width()-hmargin, height()/2);
   p.drawLine(hmargin, vmargin, hmargin, height()-vmargin);
   
-//   // draw some lines connecting points together.. 
-//   p.setPen(QPen(QColor(0, 0, 255), 1));
-//   int first = 0;
-//   int second = 1;
-//   while(1){
-//     if(first >= drawPoints.size()){
-//       break;
-//     }
-//     if(!drawPoints[first].active){
-//       first++;
-//       continue;
-//     }
-//     // so if I'm here, first is ok,, find second..
-//     second = first + 1;
-//     //cout << "first is : " << first << " second is : " << second << endl;
-//     while(1){
-//       if(second >= drawPoints.size()){
-// 	second = -1;
-// 	break;        // but need to identify the failure somehow..
-//       }
-//       if(!drawPoints[second].active){
-// 	second++;
-// 	continue;
-//       }else{
-// 	break;
-//       }
-//     }
-//     if(second == -1){
-//       break;
-//     }
-//     // and if I'm here, I should have two ok points that I can draw lines between, but it's probably going to be a bit ugly..
-//     int x1, x2, y1, y2;
-//     x1 = hmargin + ( (first+1) * (width() - 2*hmargin)) / (eMap.size());
-//     x2 = hmargin + ( (second+1) * (width() - 2*hmargin)) / (eMap.size());
-//     y1 = height()/2 + drawPoints[first].yo;
-//     y2 = height()/2 + drawPoints[second].yo;
-//     p.drawLine(x1, y1, x2, y2);    
-//     first = second;
-//   }
-
   // and then draw a blob at each position for a drawPoint..
   p.setPen(NoPen);
   p.setBrush(QColor(0, 0, 255));     // bright blue man.. let's have something milder later on... 

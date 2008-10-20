@@ -69,14 +69,14 @@ void TraceDrawer::paintEvent(QPaintEvent* e){
     QString numString;
     // first draw the connections.. 
     p.setPen(QPen(QColor(255, 255, 255), 1));
-    for(int i=1; i < points.size(); i++){
+    for(uint i=1; i < points.size(); i++){
       int x1 = (int)((points[i-1].x - minx) * xMult) + margin;
       int y1 = (int)((points[i-1].y - miny) * yMult) + margin;
       int x2 = (int)((points[i].x - minx) * xMult) + margin;
       int y2 = (int)((points[i].y - miny) * yMult) + margin;
       p.drawLine(x1, y1, x2, y2);
     }
-    for(int i=0; i < points.size(); i++){
+    for(uint i=0; i < points.size(); i++){
       int x = (int)((points[i].x - minx) * xMult) + margin;
       int y = (int)((points[i].y - miny) * yMult) + margin;
       p.setPen(NoPen);

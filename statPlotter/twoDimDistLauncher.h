@@ -65,7 +65,7 @@ class TwoDimDistLauncher : public QWidget {
     public :
     TwoDimDistLauncher(const vitalStatistics* s, QWidget* parent=0, const char* name=0);
   ~TwoDimDistLauncher(){
-    for(int i=0; i < stats.size(); i++){
+    for(uint i=0; i < stats.size(); i++){
       delete stats[i];
     }
     if(distMapper){

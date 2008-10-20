@@ -1,3 +1,27 @@
+//Copyright Notice
+/*
+    eXintegrator integrated expression analysis system
+    Copyright (C) 2004  Martin Jakt & Okada Mitsuhiro
+  
+    This file is part of the eXintegrator integrated expression analysis system. 
+    eXintegrator is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version. 
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+  
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    PS. If you can think of a better name, please let me know...
+*/
+//End Copyright Notice
+
 #include "experimentBrowser.h"
 #include "experimentMaker.h"
 #include <qlayout.h>
@@ -59,6 +83,7 @@ ExperimentBrowser::ExperimentBrowser(map<int, userInformation>* uInfo, const int
   
   // and the labels..
 
+  QLabel* desLabel = new QLabel("Experiment Description", this, "desLabel");
   creatorLabel = new QLabel("Researcher\t: ", this, "creatorLabel");
   exptTimeLabel = new QLabel("Experiment Time\t: ", this, "cTimeLabel");
   entryTimeLabel = new QLabel("Entry Time\t: ", this, "eTimeLabel");
@@ -71,10 +96,11 @@ ExperimentBrowser::ExperimentBrowser(map<int, userInformation>* uInfo, const int
   connect(eMaker, SIGNAL(commitProtocolToDB(Protocol*)), this, SIGNAL(commitProtocolToDB(Protocol*)) );
 
   // and a little bit of a layout..
-  QHBoxLayout* hbox = new QHBoxLayout(this);
+  QHBoxLayout* hbox = new QHBoxLayout(this, 1, 2);
   
   hbox->addWidget(experimentView);
-  QVBoxLayout* rbox = new QVBoxLayout(hbox);   // no need to add to.. I suppose maybe..
+  QVBoxLayout* rbox = new QVBoxLayout(hbox, 2);   // no need to add to.. I suppose maybe..
+  rbox->addWidget(desLabel);
   rbox->addWidget(experimentDescription);
   rbox->addWidget(creatorLabel);
   rbox->addWidget(exptTimeLabel);

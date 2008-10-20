@@ -117,6 +117,7 @@ void dpoint::assignValues(dpoint* p){
     }
 }
 
+
 // Since we don't need to add any more memory, we can just decrease the number that tell us how
 // many dimensions we are using. For the dpoint that is just changing the dimNo itself. For the
 // componentVectors, all that is necessary is to change forceNo.
@@ -211,10 +212,7 @@ void dpoint::resetForces(){              /// THIS GIVES RISE TO A MEMORY LEAK IF
     forceVectors[i] = 0;
   }
   componentNo = 0;        // that way we don't have to allocate any new memory, and we should see a large speedup..
-  //  for(int i=0; i < dimNo; i++){
-  //  components[i].forces.resize(0);  // ??
-  //}
-  //components.resize(0);
+
 }
 
 DistanceMapper::DistanceMapper(vector<int> expI, vector<vector<float> > d, int dims,  QMutex* mutx, vector<vector<dpoint*> >* prntPoints, QObject* prnt, vector<stressInfo>* stressLevels, DimReductionType drt){
@@ -432,7 +430,6 @@ void DistanceMapper::clonePoints(){
   }
 }
 
-// This doesn't seem to do anything at all. Should remove it.. 
 // drt defines how we reduce the dimensionality
 // it_no is the current iteration and we use that to define whether
 // we reduce the dimensionality or not

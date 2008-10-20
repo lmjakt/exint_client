@@ -32,11 +32,11 @@ vector<int> IndexSet::And(vector<int> b){
   vector<int> c;
   c.reserve(Index.size() < b.size() ? Index.size() : b.size());
   set<int> bset;
-  for(int i=0; i < b.size(); i++){
+  for(uint i=0; i < b.size(); i++){
     bset.insert(b[i]);
   }
   // and simply..
-  for(int i=0; i < Index.size(); i++){
+  for(uint i=0; i < Index.size(); i++){
     if(bset.count(Index[i])){
       c.push_back(Index[i]);
     }
@@ -49,13 +49,13 @@ vector<int> IndexSet::Or(vector<int> b){
   vector<int> c;
   c.reserve(Index.size() + b.size());
   set<int> aused;
-  for(int i=0; i < Index.size(); i++){
+  for(uint i=0; i < Index.size(); i++){
     c.push_back(Index[i]);         // whatever the case..
     aused.insert(Index[i]);
   }
   // and put in the rest from b that we haven't already put in and check the result..
   // keeping the order by using a ugly method..
-  for(int i=0; i < b.size(); i++){
+  for(uint i=0; i < b.size(); i++){
     if(!aused.count(b[i])){
       c.push_back(b[i]);
     }
@@ -67,10 +67,10 @@ vector<int> IndexSet::Not(vector<int> b){   // subtracts things in this vector f
   vector<int> c;
   c.reserve(b.size());
   set<int> aset;
-  for(int i=0; i < Index.size(); i++){
+  for(uint i=0; i < Index.size(); i++){
     aset.insert(Index[i]);
   }
-  for(int i=0; i < b.size(); i++){
+  for(uint i=0; i < b.size(); i++){
     if(!aset.count(b[i])){
       c.push_back(b[i]);
     }
@@ -109,7 +109,7 @@ Protocol::Protocol(int i, int pi, uint time, int cid, string cname, string pname
 
 Protocol* Protocol::nextDaughter(){
   Protocol* daughter = parent;          ////  oooohhh,,,, 
-  if(daughters.size() > currentDaughter){
+  if((int)daughters.size() > currentDaughter){
     daughter = daughters[currentDaughter];
     currentDaughter++;
   }
@@ -118,7 +118,7 @@ Protocol* Protocol::nextDaughter(){
 
 Protocol::~Protocol(){
   cout << "deleting protocol " << endl;
-  for(int i=0; i < steps.size(); i++){
+  for(uint i=0; i < steps.size(); i++){
     cout << "protocol destructor deleting step : " << i << endl;
     delete steps[i];
     steps[i] = 0;     // for completeness.. 
@@ -165,7 +165,7 @@ ProtocolCollection::ProtocolCollection(map<int, Protocol*> prots){
 }
 
 ProtocolCollection::~ProtocolCollection(){
-  cout << "\t\tProtocol Coleection : address " << (int)this << endl;
+  cout << "\t\tProtocol Coleection : address " << (long)this << endl;
   //  refcount--;
   cout << "\t\tDELETE PROTOCOL COLLECTION DESTRUCTOR +++++++Protocol Collection refcount is : " << refcount << endl;
   if(refcount > 0){

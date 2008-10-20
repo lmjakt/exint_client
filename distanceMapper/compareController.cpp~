@@ -36,6 +36,7 @@ using namespace std;
 CompareController::CompareController(QWidget* parent, const char* name)
   : QWidget(parent, name)
 {
+    setCaption("Sample Comparer");
   
   int labelMargin = 4;
   QLabel* fullLabel = new QLabel("Full Comparisons", this, "fullLabel");

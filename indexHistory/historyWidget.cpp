@@ -98,7 +98,7 @@ HistoryWidget::HistoryWidget(deque<IndexSet>* islist, QWidget* parent, const cha
 
 void HistoryWidget::newIndex(){
   // first make sure we have enough widgets to assign..
-  for(int i=indexWidgets.size(); i < listPointer->size(); i++){
+  for(uint i=indexWidgets.size(); i < listPointer->size(); i++){
     IndexWidget* iw = new IndexWidget(this);
     connect(iw, SIGNAL(switchToggled()), this, SLOT(checkSelection()) );
     indexWidgets.push_back(iw);   // no point naming it..
@@ -109,11 +109,11 @@ void HistoryWidget::newIndex(){
   // and go through and assing..
   vector<bool> include(indexWidgets.size());
   vector<bool> exclude(indexWidgets.size());    // ugly, but I can't think of a good way of doing this.. 
-  for(int i=0; i < indexWidgets.size(); i++){
+  for(uint i=0; i < indexWidgets.size(); i++){
     include[i] = indexWidgets[i]->Include();
     exclude[i] = indexWidgets[i]->Exclude();
   }
-  for(int i=0; i < listPointer->size() && i < indexWidgets.size(); i++){    // double check shouldn't be necessary, but if multithreaded behaviour of sorts..
+  for(uint i=0; i < listPointer->size() && i < indexWidgets.size(); i++){    // double check shouldn't be necessary, but if multithreaded behaviour of sorts..
     if(i == 0){
       indexWidgets[i]->setIndex((*listPointer)[i], i+1);  // hope this isn't too slow..
     }else{
@@ -131,13 +131,13 @@ QSize HistoryWidget::sizeHint() const {
 void HistoryWidget::checkSelection(){
   selected.resize(0);
   cout << "check selection selected is : " << selected.size() << endl;
-  for(int i=0; i < indexWidgets.size(); i++){
+  for(uint i=0; i < indexWidgets.size(); i++){
     if(indexWidgets[i]->Include()){
       selected = indexWidgets[i]->indexSet.Or(selected);
       cout << "\tincluding from " << indexWidgets[i]->indexSet.description() << "  size now : " << selected.size() << endl;
     }
   }
-  for(int i=0; i < indexWidgets.size(); i++){
+  for(uint i=0; i < indexWidgets.size(); i++){
     if(indexWidgets[i]->Exclude()){
       selected = indexWidgets[i]->indexSet.Not(selected);
       cout << "\texcluding from " << indexWidgets[i]->indexSet.description() << "  size now : " << selected.size() << endl;
@@ -170,7 +170,7 @@ void HistoryWidget::loadBoolean(){
 void HistoryWidget::loadBoolean(QString text, bool loadIt){
   // first we need to make a vector of vectors.. fairly easy..
   vector<vector<int> > vts;
-  for(int i=0; i < indexWidgets.size(); i++){
+  for(uint i=0; i < indexWidgets.size(); i++){
     vts.push_back(indexWidgets[i]->indexSet.index());
   }
   BoolParser parser(text, vts);

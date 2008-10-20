@@ -204,7 +204,7 @@ void ProtocolManager::addProtocol(Protocol* prot){
     cout << "protocol has a request id looking for a holder which is :" << prot->requestId << endl;
     set<ProtocolHolder*>::iterator it;
     for(it = protocols.begin(); it != protocols.end(); it++){
-      if((*it)->theProtocol() == (Protocol*)prot->requestId){
+	if((*it)->theProtocol() == (Protocol*)prot->requestId){   /// SERIOUS ERROR ON 64 BIT MACHINES /// 
 	cout << "found a protocol holder ! : " << endl;
 	(*it)->setProtocol(prot);
 	// if this is the case then it makes sense for us to update the protocol collection as well.. 
@@ -296,4 +296,5 @@ void ProtocolManager::popMenu(QListViewItem* item, const QPoint& point, int i){
   }
   // first just chek how this works..
   loadMenu->popup(point);
+  i = i;
 }

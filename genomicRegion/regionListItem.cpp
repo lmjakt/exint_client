@@ -40,7 +40,7 @@ RegionListItem::RegionListItem(chromRegion* cr, int i, QListView* parent) :
   label.append(cr->chromosome.c_str());
   setText(0, label);
   // how about number of matches ??? or what can we do.. 
-  label.sprintf("(%d matches)", cr->fPMatches.size()); 
+  label.sprintf("(%d matches)", (int)cr->fPMatches.size()); 
   setText(1, label);  // should be OK.. 
 }
 

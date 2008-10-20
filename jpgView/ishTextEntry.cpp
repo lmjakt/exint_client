@@ -52,7 +52,7 @@ IshTextEntry::IshTextEntry(vector<QString> fieldNames, QWidget* parent, const ch
   fieldChooser = new QComboBox(true, this, "fieldChooser");
   fieldChooser->setDuplicatesEnabled(false);
   fieldChooser->insertItem("----------------");    // hence 0 is not valid.. if 0, do nothing.. but perhaps complain loudly.. 
-  for(int i=0; i < fieldNames.size(); i++){
+  for(uint i=0; i < fieldNames.size(); i++){
     int in = fieldChooser->count();
     fieldChooser->insertItem(fieldNames[i], in);
     // and set up the maps accordingly.. 
@@ -85,7 +85,7 @@ QSize IshTextEntry::sizeHint() const
 
 void IshTextEntry::setFields(vector<QString> fieldNames){
   cout << "Setting fields in the text inserter ,, how's this " << endl;
-  for(int i=0; i < fieldNames.size(); i++){
+  for(uint i=0; i < fieldNames.size(); i++){
     int in = fieldChooser->count();
     fieldChooser->insertItem(fieldNames[i], in);
     // and set up the maps accordingly.. 
@@ -150,7 +150,7 @@ void IshTextEntry::commitData(){
 }
 
 void IshTextEntry::insertNotification(ishTextInsert data){
-  // check if we are waiting for this one,
+  // check if we are waiting for this one,  /// SERIOUS ERROR ON 64 BIT SYSTEM.. //// 
   set<ishTextInsert*>::iterator it = pendingInserts.find((ishTextInsert*)data.id);
   if(it == pendingInserts.end()){
     cout << "no such pending insert here, go away.. " << endl;

@@ -705,7 +705,7 @@ void ClientWindow::writeHistory(){
       }
     }
     currentProbeSetId = client->pSet.index;
-    if(history.size() < historySize){
+    if(history.size() < (uint)historySize){
       history.push_front(new ProbeSetWidget(client->pSet, client->pData));
       history[0]->setPalette(palette());
       connect(history[0], SIGNAL(plotMyMean(ProbeSetWidget*, bool)), meanPlotWindow, SLOT(toggleProbeSet(ProbeSetWidget*, bool)));
@@ -841,6 +841,7 @@ void ClientWindow::newProbeData(probe_data* pd){
     ignoreIndex = 0;
     return;
   }
+  //////////// I wonder about the line below. It needs to be investigated. Should it be removed or it -> it++?
   if(reportRequests.size()){
     for(set<writeRequest*>::iterator it=reportRequests.begin(); it != reportRequests.end(); it){
       if((*it)->indicesToWrite.count(pd->index)){
@@ -1091,7 +1092,7 @@ void ClientWindow::writeHtmlReport(){
     out << "<tr><td colspan=1>TIGR</td><td colspan=2>" << (*lit)->myData.tigrDescription << "</td></tr>" << endl; 
     out << "<tr><td colspan=3 align=center>UniGene Matches</td></tr>" << endl;
     out << "<tr><td colspan=1>Gene</td><td colspan=1>Title</td><td colspan=1>Index</td></tr>" << endl;
-    for(int j=0; j < (*lit)->myData.ugData.size(); j++){
+    for(uint j=0; j < (*lit)->myData.ugData.size(); j++){
       out << "<tr><td colspan=1>" << (*lit)->myData.ugData[j].gene << "</td>"
 	  << "<td colspan=1>" << (*lit)->myData.ugData[j].title << "</td>"
 	  << "<td colspan=1>" << (*lit)->myData.ugData[j].index << "</td>" << endl;
@@ -1115,7 +1116,7 @@ void ClientWindow::writeCurrentIndex(){
   }
   set<int> nums;
   vector<int> currentIndex = client->curIndex();
-  for(int i=0; i < currentIndex.size(); i++){ nums.insert(currentIndex[i]); }
+  for(uint i=0; i < currentIndex.size(); i++){ nums.insert(currentIndex[i]); }
   // and then let's see if we can make a directory, just do as before..
   QDir d;
   bool dirMade = false;
@@ -1199,7 +1200,7 @@ void ClientWindow::writeCurrentProbeSet(writeRequest* wr){
 	     << "<tr><td colspan=1>TIGR</td><td colspan=2>" << client->pData.tigrDescription << "</td></tr>" << endl
 	     << "<tr><td colspan=3 align=center>UniGene Matches</td></tr>" << endl
 	     << "<tr><td colspan=1>Gene</td><td colspan=1>Title</td><td colspan=1>Index</td></tr>" << endl;
-  for(int j=0; j < client->pData.ugData.size(); j++){
+  for(uint j=0; j < client->pData.ugData.size(); j++){
     *(wr->out) << "<tr><td colspan=1>" << client->pData.ugData[j].gene << "</td>"
 	       << "<td colspan=1>" << client->pData.ugData[j].title << "</td>"
 	       << "<td colspan=1>" << client->pData.ugData[j].index << "</td>" << endl;
@@ -1272,7 +1273,7 @@ void ClientWindow::saveCurrentState(){
   /// write some sort of file identifier..
   out << "state_file_groovy_isnt_it" << endl;
   vector<int> currentIndex = client->curIndex();
-  for(int i=0; i < currentIndex.size(); i++){
+  for(uint i=0; i < currentIndex.size(); i++){
     out << currentIndex[i] << ",";
   }
   out << endl;
@@ -1295,8 +1296,8 @@ vector<int> split_line(string& line, string& pat){
   vector<int> numbers;
   //  string subWord;
   numbers.reserve(line.size()/3);
-  int first = line.find_first_not_of(pat);
-  int next;
+  uint first = line.find_first_not_of(pat);
+  uint next;
   while(first != line.npos){
     next = line.find_first_of(pat, first);
     if(next == line.npos){
@@ -1320,7 +1321,7 @@ void ClientWindow::changeIndex(vector<int> v, QString descriptor){
 void ClientWindow::restoreIndex(vector<int> v, int i, QString descriptor){
   client->setIndex(v, descriptor);
   changeIndexRange(v.size());    // unfortunately will set to 0, which will retrieve a value, this is a bit messy, but isn't that a big deal.. 
-  if(i < v.size()){
+  if((uint)i < v.size()){
     getProbe->setValue(i);
   }
 }
@@ -1339,7 +1340,7 @@ void ClientWindow::readState(){
   string delimit(",");
   string line;
   vector<int> index;
-  int current;
+  int current=0;
   vector<int> savedIndex;
   // first line is the silly identifier, return if incorrect.. 
   if(in >> line){
@@ -1374,8 +1375,8 @@ void ClientWindow::readState(){
     savedIndex = split_line(line, delimit);
   }//else{ return; }
   
-  for(int i=0; i < index.size(); i++) { cout << i << "\t" << index[i] << endl; }
-  for(int i=0; i < savedIndex.size(); i++) { cout << i << "\t" << savedIndex[i] << endl; }
+  for(uint i=0; i < index.size(); i++) { cout << i << "\t" << index[i] << endl; }
+  for(uint i=0; i < savedIndex.size(); i++) { cout << i << "\t" << savedIndex[i] << endl; }
   cout << "And the current choice is : " << current << endl;
   /// first insert the values of the saved ones into the indicesToSave, then 
   /// change the currentIndex to this vector, then go through all of these, and they
@@ -1384,7 +1385,7 @@ void ClientWindow::readState(){
   client->setIndex(savedIndex, "State File Saved");
   //  client->currentIndex = savedIndex;
   changeIndexRange(savedIndex.size());
-  for(int i=0; i < savedIndex.size(); i++){
+  for(uint i=0; i < savedIndex.size(); i++){
     indicesToSave.insert(savedIndex[i]);
     /// and call the getProbeSet for value i..
     getProbeSet(i);
@@ -1395,7 +1396,7 @@ void ClientWindow::readState(){
   client->setIndex(index, "State File Index");
   //  client->currentIndex = index;
   changeIndexRange(index.size());
-  if(current < index.size()){
+  if(current < (int)index.size()){
     getProbe->setValue(current);
   }else{
     getProbe->setValue(0);
@@ -1447,7 +1448,7 @@ void ClientWindow::requestProtocolCollection(int requestId){
 
 void ClientWindow::receiveProtocolCollection(int requester, int requestId, ProtocolCollection* collection){
   //cout << "Receiving new protocol collection .. requestId is : " << requestId << "  and requester is " << requester << endl;;
-  cout << "|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||" << endl;
+    cout << "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| " << requester << endl;
   protManager->setProtocolCollection(requestId, collection);
   cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << endl;
   thumbnailViewer->exptBrowser->eMaker->setProtocolCollection(requestId, collection);  // hmmmm.. 
@@ -1517,12 +1518,12 @@ vector<int> ClientWindow::hashPasswd(QString passwd){
   //int sqSums = 0;
   //int ratSums = 0;
   vector<int> returns(3);
-  for(int i=0; i < passwd.length(); i++){
+  for(uint i=0; i < passwd.length(); i++){
     //char c = passwd.at(i)
     nums[i] = (int)passwd.at(i).latin1();    // I think I can do this..
   }
   int e = nums.size();
-  for(int i=0; i < nums.size(); i++){
+  for(uint i=0; i < nums.size(); i++){
     int v = nums[i]-85;
     e--;
     returns[0] += ((nums[i]) * ((nums[i] % 30)-15));  // bigger range,, .. gives less information about the length of the string.

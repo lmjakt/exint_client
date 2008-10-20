@@ -121,7 +121,7 @@ void ExperimentBrowser::setExperiments(vector<Experiment> expts){
     it = experimentIds.begin();
     experimentIds.erase(it);
   }
-  for(int i=0; i < expts.size(); i++){
+  for(uint i=0; i < expts.size(); i++){
     new ExperimentItem(expts[i], experimentView);   // which should be ok..
   }
   // and in fact that should be all we need to do..
@@ -155,6 +155,7 @@ void ExperimentBrowser::popMenu(QListViewItem* item, const QPoint& point, int c)
   //  requestProtocol();
   //  Experiment expt = ((ExperimentItem*)item)->expt();
   //emit loadProtocol(expt.id);
+  c = c;
 }
 
 void ExperimentBrowser::requestProtocol(){

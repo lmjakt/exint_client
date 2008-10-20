@@ -45,7 +45,7 @@ ClusterPlotter::ClusterPlotter(QWidget* parent, const char* name)
 }
 
 void ClusterPlotter::paintCluster(clusterSet* cs, int index){
-  if(index < cs->points.size() && index >= 0){
+  if(index < (int)cs->points.size() && index >= 0){
     if(cs->points[index].size()){
       penWidth = 2;
       paintLines(cs->points[index], cs->expts[index], cs->expInfo);
@@ -77,7 +77,7 @@ void ClusterPlotter::loadGenes(){
   if(clusterNumber < 0 || theCluster == 0){
     return;
   }
-  if(clusterNumber < theCluster->indices.size()){
+  if(clusterNumber < (int)theCluster->indices.size()){
     QString description;
     description.setNum(clusterNumber);
     description.prepend("Cluster no. ");
@@ -99,9 +99,9 @@ void ClusterPlotter::saveClusters(){
   out << "groovy_cluster_set_file" << endl;
   // and lets write some numbers.. 
   out << theCluster->indices.size() << " clusters" << endl;
-  for(int i=0; i < theCluster->indices.size(); i++){
+  for(uint i=0; i < theCluster->indices.size(); i++){
     out << i << "\t";
-    for(int j=0; j < theCluster->indices[i].size(); j++){
+    for(uint j=0; j < theCluster->indices[i].size(); j++){
       out << theCluster->indices[i][j] << " ";
     }
     out << endl;

@@ -123,7 +123,7 @@ void PSBox::drawBox(QPainter* p, bool keepState){
   // first determine if we want to draw this or not.. 
   int expLog = -500;
   if(match->expect){    // larger than 0.
-    int expLog = (int)log10(match->expect);
+    expLog = (int)log10(match->expect);
   }
   if(expLog <= *thresholds.maxExpect && *thresholds.minLength <= match->alLength && (float)match->match/(float)match->alLength > *thresholds.minMatch){
     active = true;
@@ -173,15 +173,15 @@ IshBox::IshBox(QRect bx, int i, ishProbeMatchSet& matchSet, float range, int yin
 //       //cout << "decreasing y " << endl;
 //     }
     //cout << "AND now y is : " << y << endl;
-    int x1 = lm + w * (((float)((*it).cStart - b))/range);
-    int mw = w * (((float)((*it).cEnd - (*it).cStart))/range);
+    int x1 = int( lm + w * (((float)((*it).cStart - b))/range) );
+    int mw = int( w * (((float)((*it).cEnd - (*it).cStart))/range) );
     if(!mw){ mw = 1; }
     matches.push_back(QRect(x1, y, mw, h));
   }
 }
 
 void IshBox::shift(int dy){
-  for(int i=0; i < matches.size(); i++){
+  for(uint i=0; i < matches.size(); i++){
     matches[i].moveBy(0, dy);
   }
   box.moveBy(0, dy);
@@ -196,7 +196,7 @@ void IshBox::drawBox(QPainter* p, bool keepState){
   p->save();
   p->setPen(Qt::NoPen);
   p->setBrush(QColor(255, 0, 255));
-  for(int i=0; i < matches.size(); i++){
+  for(uint i=0; i < matches.size(); i++){
     p->drawRect(matches[i]);
   }
   p->setPen(QPen(QColor(255, 255, 255), 1));   // hmm 
@@ -231,7 +231,7 @@ EGBox::EGBox(QRect b, ensemblTranscript* t, int g){
   int h = box.height();
   int tl = t->stop - t->start;
   //cout << "defining exons : " << endl;
-  for(int i=0; i < t->exons.size(); i++){
+  for(uint i=0; i < t->exons.size(); i++){
     //cout << "\texon " << i << endl;
     //cout << "bw : " << bw << "\texon start : " << t->exons[i].start << "\tstop : " << t->exons[i].stop << "\t length : " << tl << endl;
     int left = bl + (bw*(t->exons[i].start - t->start))/tl;
@@ -252,25 +252,25 @@ EGBox::~EGBox(){
 }
 
 void EGBox::shift(int dy){
-  for(int i=0; i < exons.size(); i++){
+  for(uint i=0; i < exons.size(); i++){
     exons[i].moveBy(0, dy);
   }
-  for(int i=0; i < codeExons.size(); i++){
+  for(uint i=0; i < codeExons.size(); i++){
     codeExons[i].moveBy(0, dy);
   }
   box.moveBy(0, dy);
 }
 
 void EGBox::drawBox(QPainter* p, bool keepState){
-  //cout << "Drawing Ensembl Transcript : left " << box.left() << "\ttop : " << box.top() << endl;
+//  cout << "Drawing Ensembl Transcript : left " << box.left() << "\ttop : " << box.top() << endl;
   p->save();
   p->setPen(Qt::NoPen);
   p->setBrush(QColor(147, 45, 120));
-  for(int i=0; i < exons.size(); i++){
+  for(uint i=0; i < exons.size(); i++){
     p->drawRect(exons[i]);
   }
   p->setBrush(QColor(255, 255, 0));
-  for(int i=0; i < codeExons.size(); i++){
+  for(uint i=0; i < codeExons.size(); i++){
     p->drawRect(codeExons[i]);
   }
 
@@ -321,12 +321,12 @@ void EGBox::checkBox(){
   if(!box.width()){
     box.setRect(box.left(), box.top(), 1, box.height());
   }
-  for(int i=0; i < exons.size(); i++){
+  for(uint i=0; i < exons.size(); i++){
     if(!exons[i].width()){
       exons[i].setRect(exons[i].left(), exons[i].top(), 1, exons[i].height());
     }
   }
-  for(int i=0; i < codeExons.size(); i++){
+  for(uint i=0; i < codeExons.size(); i++){
     if(!codeExons[i].width()){
       codeExons[i].setRect(codeExons[i].left(), codeExons[i].top(), 1, codeExons[i].height());
     }
@@ -346,7 +346,7 @@ TranscriptBox::TranscriptBox(QRect b, Transcript& trans){
   int h = box.height();
   int tl = trans.cend - trans.cstart;
   //cout << "defining exons : " << endl;
-  for(int i=0; i < trans.exons.size(); i++){
+  for(uint i=0; i < trans.exons.size(); i++){
     int left = bl + (bw*(trans.exons[i].cstart - trans.cstart))/tl;
     int w = (bw*(trans.exons[i].cend - trans.exons[i].cstart))/tl;
     //cout << "\tAdding an Exon : cstart " << trans.exons[i].cstart << "\tto " << trans.exons[i].cend << " left : " << left << "\tright : " << left + w << endl; 
@@ -358,17 +358,17 @@ TranscriptBox::TranscriptBox(QRect b, Transcript& trans){
 
 void TranscriptBox::shift(int dy){
   box.moveBy(0, dy);
-  for(int i=0; i < exons.size(); i++){
+  for(uint i=0; i < exons.size(); i++){
     exons[i].moveBy(0, dy);
   }
 }
 
 void TranscriptBox::drawBox(QPainter* p, bool keepState){
-  //cout << "Drawing Transcript : " << box.left() << "  to : " << box.right() << endl;
+//  cout << "Drawing Transcript : " << box.left() << "  to : " << box.right() << endl;
   p->save();
   p->setPen(Qt::NoPen);
   p->setBrush(QColor(0, 0, 255));
-  for(int i=0; i < exons.size(); i++){
+  for(uint i=0; i < exons.size(); i++){
     p->drawRect(exons[i]);
   }
   p->setPen(QPen(QColor(200, 200, 0), 1));
@@ -412,9 +412,9 @@ action RegionBox::mouseClick(QMouseEvent* e){
     }
     // we want to make a new DNA box. -- we need to work out some new parameters for it, as in where to put it and so on..
     float scale = ((float)(wend-wstart))/((float)w);
-    int midPos = wstart + (e->x() - lm) * scale;    // will give warnings in the compile but should be ok.. 
+    int midPos = int( wstart + (e->x() - lm) * scale );    // will give warnings in the compile but should be ok.. 
     int pixRange = 50;     // arbitrary 100 pixel start..
-    int bpRange = pixRange * scale;
+    int bpRange = int( pixRange * scale );
     //cout << "Calling The DNABox constructor : " << endl
     //	 << "wstart : " << wstart << "\twend : " << wend << "\t w : " << w << "\tscale : " << scale << "\tbprange : " << bpRange << "\t midPos : " << midPos << endl;
     QRect selBox(e->x() - pixRange, box.top() + (box.height() - selHeight)/2, pixRange*2, selHeight);
@@ -475,8 +475,8 @@ action DNABox::mouseMove(QMouseEvent* e){
   }
   // work out the changes to the 
   float scale = (float)(stop-start) / (float)(box.right() - box.left());
-  db = dpb * scale;
-  de = dpe * scale;
+  db = int( dpb * scale );
+  de = int( dpe * scale );
   // and update values..  // though we should check..
 //   cout << "db = " << db << "\tde " << de << endl;
 //   cout << "dpb = " << dpb << "\tdpe " << dpe << endl;
@@ -622,7 +622,7 @@ void RegionDrawing::moveSelect(int x, int y){
 void RegionDrawing::endSelect(int x, int y){
   selecting = false;
   // and work out how to change begin and end, and reposition.. or something like that...
-  int minDist = 30;    // don't do unless distance betseen start and stop is larger than some value
+//  int minDist = 30;    // don't do unless distance betseen start and stop is larger than some value
   if(abs(x-selX) < 30){
     return;
   }
@@ -636,8 +636,8 @@ void RegionDrawing::endSelect(int x, int y){
     b = e;
     e = tb;
   }
-  region->selectEnd = region->selectBegin + e * ((float)range);
-  region->selectBegin = region->selectBegin + b * ((float)range);
+  region->selectEnd = int( region->selectBegin + e * ((float)range) );
+  region->selectBegin = int( region->selectBegin + b * ((float)range) );
   //cout << "\t\tbegin : " << begin << "\tend : " << end << endl;
   rePosition();           // ugly maths, but should work.. 
 }
@@ -672,8 +672,14 @@ void RegionDrawing::rePosition(){
 void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, int p){             // hmm, is it possible for this to crash.. ??
   // first delete all of the old regions.. 
   // p is the current probe, g is the current gene thing.. need to know in order to draw with red outline.. 
-  //cout << "Region Drawing, calling rePosition " << endl;
-  //cout << "Boxes size is : " << boxes.size() << endl;
+
+//   cout << "Region Drawing, calling rePosition " << endl;
+//   cout << "Boxes size is : " << boxes.size() << endl;
+//   for(set<string>::iterator it=transcriptTypes->begin(); it != transcriptTypes->end(); it++)
+//       cout << "\tknown transcript : " << (*it) << endl;
+//   for(set<string>::iterator it=includedTypes->begin(); it != includedTypes->end(); it++)
+//       cout << "\tincluded transcript type : " << (*it) << endl;
+  
   //  cout << "Calling reposition with begin : " << b << "   and end : " << e << endl;
   if(region != cr){        // new region, better delete selections..
     while(selectedRegions.size()){
@@ -690,7 +696,7 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   windowWidth = width;
   currentGene = g;
   currentProbe = p;
-  for(int i=0; i < boxes.size(); i++){
+  for(uint i=0; i < boxes.size(); i++){
     //cout << "deleting box # " << i << endl;
     delete boxes[i];
   }
@@ -703,7 +709,7 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   int ypos = 0;
 
   // First Forward Genes.. draw from the bottom  to the top, assume genes don't overlap.. 
-  for(int i=0; i < cr->fEnsGenes.size(); i++){
+  for(uint i=0; i < cr->fEnsGenes.size(); i++){
     addEnsGene(cr->fEnsGenes[i], range, ypos, -1, b, e, w, g);
   }
   // let's do forward matches to fantom transcripts.. 
@@ -712,7 +718,7 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   uint transcriptBegin = boxes.size();
   for(tit = cr->fTranscripts.begin(); tit != cr->fTranscripts.end(); tit++){
     transcriptTypes->insert((*tit).first);    // should be the transcript type.. 
-    int tempy = addTranscript((*tit).second, range, ypos, b, e, w, transcriptBegin);
+    addTranscript((*tit).second, range, ypos, b, e, w, transcriptBegin);
     //if(tempy > ypos){ ypos = tempy; }
     
   }
@@ -722,8 +728,9 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   // for the moment we'll draw all of these at the 0 line.. and see how it goes.. 
   ypos += featureMargin;
   map<int, ishProbeMatchSet>::iterator it;
+
   for(it = cr->fIshMatches.begin(); it != cr->fIshMatches.end(); it++){
-    int y = addIshProbe((*it).second, range, ypos, -1, b, e, w);
+      addIshProbe((*it).second, range, ypos, -1, b, e, w);
   }
   
   // and Now let's start darying things properly.. we need to start incrementing ypos..
@@ -752,9 +759,9 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   boxes.push_back(DNABox);            // which should give the appropriate thiny.. 
 
   // and let's draw the forward probe Set matches..
-  for(int i=0; i < cr->fPMatches.size(); i++){
-    int x1 = lm + w * (((float)(cr->fPMatches[i].cStart - b))/range);
-    int x2 = lm + w * (((float)(cr->fPMatches[i].cEnd - b))/range);
+  for(uint i=0; i < cr->fPMatches.size(); i++){
+    int x1 = int( lm + w * (((float)(cr->fPMatches[i].cStart - b))/range) );
+    int x2 = int( lm + w * (((float)(cr->fPMatches[i].cEnd - b))/range) );
     int height = cr->fPMatches[i].afIndex == p ? 2*probeHeight : probeHeight;
     PSBox* psbox = new PSBox(QRect(x1, ypos-(height-probeHeight), x2-x1, height), cr->fPMatches[i].afIndex, &cr->fPMatches[i], thresholds);
     psbox->checkBox();
@@ -762,9 +769,9 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   }
   // and then the reverse probe Set Matches.. but now easier..
   ypos += probeHeight;
-  for(int i=0; i < cr->rPMatches.size(); i++){
-    int x1 = lm + w * (((float)(cr->rPMatches[i].cStart - b))/range);
-    int x2 = lm + w * (((float)(cr->rPMatches[i].cEnd - b))/range);
+  for(uint i=0; i < cr->rPMatches.size(); i++){
+    int x1 = int( lm + w * (((float)(cr->rPMatches[i].cStart - b))/range) );
+    int x2 = int( lm + w * (((float)(cr->rPMatches[i].cEnd - b))/range) );
     int height = cr->rPMatches[i].afIndex == p ? 2*probeHeight : probeHeight;
     PSBox* psbox = new PSBox(QRect(x1, ypos, x2-x1, height), cr->rPMatches[i].afIndex, &cr->rPMatches[i], thresholds);
     psbox->checkBox();
@@ -772,22 +779,24 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   }
   ypos += featureMargin + 2*probeHeight;
   // and then the reverse ish matches .. 
+
   for(it = cr->rIshMatches.begin(); it != cr->rIshMatches.end(); it++){
-    int y = addIshProbe((*it).second, range, ypos, 1, b, e, w); 
+    addIshProbe((*it).second, range, ypos, 1, b, e, w); 
   }
+
   ypos += featureMargin + ishHeight;
   maxY = ypos;       // in case there's nothing below..
   transcriptBegin = boxes.size();
   for(tit = cr->rTranscripts.begin(); tit != cr->rTranscripts.end(); tit++){
-    int tempy = addTranscript((*tit).second, range, ypos, b, e, w, transcriptBegin);
+    addTranscript((*tit).second, range, ypos, b, e, w, transcriptBegin);
     //if(tempy > ypos){ ypos = tempy; }
   }
   ypos = maxY;
   //  ypos += featureMargin + geneHeight;
  
   // and then the tricky stuff.. 
-  for(int i=0; i < cr->rEnsGenes.size(); i++){
-    int y = addEnsGene(cr->rEnsGenes[i], range, ypos, 1, b, e, w, g);   // but maybe I don't need the y.. !! 
+  for(uint i=0; i < cr->rEnsGenes.size(); i++){
+      addEnsGene(cr->rEnsGenes[i], range, ypos, 1, b, e, w, g);   // but maybe I don't need the y.. !! 
   }
   // let's define a box for the sliding region..
   ypos = maxY;
@@ -796,8 +805,8 @@ void RegionDrawing::rePosition(chromRegion* cr, int b, int e, int width, int g, 
   slidePole.setRect(lm, ypos, w, DNAWidth);
   // and make a SLIDER for it..
   float cRange = float(cr->chromEnd - cr->chromStart);
-  int x1 = lm + w * (((float)(b - cr->chromStart))/cRange);
-  int l = w * (((float)(e - b))/cRange);
+  int x1 = int( lm + w * (((float)(b - cr->chromStart))/cRange) );
+  int l = int( w * (((float)(e - b))/cRange) );
   //cout << "b : " << b << "\te: " << e << "\tchromStart : " << cr->chromStart << "\tchromRange : " << cRange << endl;
 
   DNASlider* slider = new DNASlider(QRect(x1, ypos - (slideHeight - DNAWidth)/2, l, geneHeight), b, e);
@@ -840,18 +849,18 @@ void RegionDrawing::positionSelections(int ypos){
 }
 
 int RegionDrawing::addEnsGene(ensemblGene& gene, float range, int yinit, int up, int b, int e, int w, int g){
-  // cout << "Adding EnseGene : b : " << b << "  e : " << e << "  yinit : " << yinit << endl;
+//  cout << "Adding EnseGene : b : " << b << "  e : " << e << "  yinit : " << yinit << endl;
   if(up < 0){
     yinit = yinit + up * geneHeight;    // which in fact is a subtraction.
   }
   int y = yinit;
-  for(int i=0; i < gene.transcripts.size(); i++){
+  for(uint i=0; i < gene.transcripts.size(); i++){
     //cout << "\tTranscript : " << i << endl;
     // ok. let's just make one box for now which contains the gene. This will take care of itself anyway..
     ensemblTranscript* etrans = &gene.transcripts[i];
     y = yinit + up * i * (geneHeight + featureMargin);
-    int x1 = lm + w * (((float)(etrans->start - b))/range);
-    int x2 = lm + w * (((float)(etrans->stop - b))/range);
+    int x1 = int( lm + w * (((float)(etrans->start - b))/range) );
+    int x2 = int( lm + w * (((float)(etrans->stop - b))/range) );
     //cout << "\t\t\ttrans start : " << etrans->start << "  stop : " << etrans->stop << endl;
     //cout << "\t\t\ty: " << y << "\tx : " << x1 << "\t x2 " << x2 << endl;
     EGBox* geneBox = new EGBox(QRect(x1, y, x2-x1, geneHeight), etrans, g);
@@ -870,9 +879,9 @@ int RegionDrawing::addTranscript(Transcript& trans, float range, int y, int b, i
   if(!includedTypes->count(trans.source)){
     return(y);
   }
-  int x1 = lm + w * (((float)(trans.cstart - b))/range);
-  int mw = w * (((float)(trans.cend - trans.cstart))/range);
-  //cout << "Adding A transcript id : " << trans.id << " cstart :" << trans.cstart << "\tcend : " << trans.cend  << "\tx1 : " << x1 << "\tx2 " << x1 +mw << endl;
+  int x1 = int( lm + w * (((float)(trans.cstart - b))/range) );
+  int mw = int( w * (((float)(trans.cend - trans.cstart))/range) ); 
+//  cout << "Adding A transcript id : " << trans.id << " cstart :" << trans.cstart << "\tcend : " << trans.cend  << "\tx1 : " << x1 << "\tx2 " << x1 +mw << endl;
   TranscriptBox* tbox = new TranscriptBox(QRect(x1, y, mw, geneHeight), trans);
   bool intersect = true;
   while(intersect){
@@ -896,8 +905,8 @@ int RegionDrawing::addTranscript(Transcript& trans, float range, int y, int b, i
 }
 
 int RegionDrawing::addIshProbe(ishProbeMatchSet& match, float range, int yinit, int up, int b, int e, int w){
-  int x1 = lm + w * (((float)(match.cStart - b))/range);
-  int x2 = lm + w * (((float)(match.cEnd - b))/range);
+  int x1 = int( lm + w * (((float)(match.cStart - b))/range) );
+  int x2 = int( lm + w * (((float)(match.cEnd - b))/range) );
   int dnaY;
   int yMargin = featureMargin + (2 * probeHeight);
   //cout << "UPUPUP IS EQUAL TO : " << up << endl;
@@ -915,7 +924,7 @@ int RegionDrawing::addIshProbe(ishProbeMatchSet& match, float range, int yinit, 
 }
 
 void RegionDrawing::shift(int dy){
-  for(int i=0; i < boxes.size(); i++){
+  for(uint i=0; i < boxes.size(); i++){
     boxes[i]->shift(dy);
   }
   // and 
@@ -934,7 +943,7 @@ void RegionDrawing::draw(QPainter* p){
   p->setBrush(QColor(255, 255, 255));
   p->setPen(Qt::NoPen);
   p->drawRect(slidePole);
-  for(int i=0; i < boxes.size(); i++){
+  for(uint i=0; i < boxes.size(); i++){
     //cout << "\t\t\tdrawing box # " << i << endl;
     boxes[i]->drawBox(p);
   }
@@ -949,7 +958,7 @@ void RegionDrawing::draw(QPainter* p){
     }
   }
 
-  p->save();
+//  p->save();
   p->setPen(Qt::NoPen);
   p->setBrush(QColor(0, 0, 0));   // let's remove stuff..
   QRect r(0, minY, lm, maxY-minY);
@@ -998,7 +1007,7 @@ set<int> RegionDrawing::displayedProbeSets(vector<probeSetMatch>* matches){
       // check if things ok.. 
       int expLog = -500;
       if((*it).expect){    // larger than 0.
-	int expLog = (int)log10((*it).expect);
+	expLog = (int)log10((*it).expect);
       }
       if(expLog <= *thresholds.maxExpect && *thresholds.minLength <= (*it).alLength && (float)(*it).match/(float)(*it).alLength > *thresholds.minMatch){
 	index.insert((*it).afIndex);
@@ -1102,7 +1111,7 @@ void LocalRegionWidget::shiftDrawings(){
 
 void LocalRegionWidget::shiftDrawings(int w){        // need to give a width.. 
   int top = 0;
-  for(int i=0; i < drawings.size(); i++){
+  for(uint i=0; i < drawings.size(); i++){
     // set miny to be 0.. 
     // cout << "Shifting a drawing by : " << top - drawings[i]->miny() << endl;
     drawings[i]->shift(top - drawings[i]->miny());
@@ -1110,8 +1119,8 @@ void LocalRegionWidget::shiftDrawings(int w){        // need to give a width..
   }
   int h = height();
   if(drawings.size()){
-    if(h < (drawings.back()->maxy() + transcriptTypes.size() * (typeHeight + typeMargin)) ){   // make space for the drawings.. 
-      h = drawings.back()->maxy() + transcriptTypes.size() * (typeHeight + typeMargin);
+    if(h < (drawings.back()->maxy() + (int)transcriptTypes.size() * (typeHeight + typeMargin)) ){   // make space for the drawings.. 
+      h = drawings.back()->maxy() + (int)transcriptTypes.size() * (typeHeight + typeMargin);
     }
   }
   recommendedSize = QSize(w, h);
@@ -1120,7 +1129,7 @@ void LocalRegionWidget::shiftDrawings(int w){        // need to give a width..
 void LocalRegionWidget::newSize(int w, int h, bool forceUpdate){
   // we need to go throught the date again and reposition the boxes.. 
   //cout << "New Size calling things... " << endl;
-  for(int i=0; i < drawings.size() && i < regions->size(); i++){
+  for(uint i=0; i < drawings.size() && i < regions->size(); i++){
     drawings[i]->rePosition(w);
     //    drawings[i]->rePosition(&(*regions)[i], selectBegin[i], selectEnd[i], w, currentlySelectedGene, currentProbeSet);
   }
@@ -1152,7 +1161,7 @@ void LocalRegionWidget::newData(int i, int g){
   //slideRegions.resize(regions->size());
   //sliders.resize(regions->size());
   //  regionBoxes.resize(0);    // one for each strand.. 
-  for(int i=0; i < drawings.size(); i++){
+  for(uint i=0; i < drawings.size(); i++){
     delete drawings[i];
   }
   drawings.resize(0);
@@ -1165,9 +1174,9 @@ void LocalRegionWidget::newData(int i, int g){
   }
   maxY = 0;
   minY = 0;        /// make boxes in negative space if appropriate.. then 
-  int currentY = 0;
-  int w = width()-lm-rm;
-  for(int i=0; i < regions->size(); i++){
+//  int currentY = 0;
+//  int w = width()-lm-rm;
+  for(uint i=0; i < regions->size(); i++){
     int range = (*regions)[i].chromEnd - (*regions)[i].chromStart;
     if(!range){
       continue;
@@ -1196,7 +1205,7 @@ void LocalRegionWidget::newData(int i, int g){
   cout << "and made the drawing.. " << endl;
   // go through and shift the drawings.. 
   int top = 0;
-  for(int i=0; i < drawings.size(); i++){
+  for(uint i=0; i < drawings.size(); i++){
     // set miny to be 0.. 
     //cout << "Shifting a drawing by : " << top - drawings[i]->miny() << endl;
     drawings[i]->shift(top - drawings[i]->miny());
@@ -1218,6 +1227,7 @@ QSize LocalRegionWidget::sizeHint() const {
 
 void LocalRegionWidget::setSelectRegion(int ss, int se){
   // for now do nothing.. maybe we will use it later..
+    ss = se;  // to remove the warning.
 }
 
 void LocalRegionWidget::paintEvent(QPaintEvent* e){
@@ -1241,16 +1251,16 @@ void LocalRegionWidget::paintEvent(QPaintEvent* e){
     
     int dnaWidth = 2;
     QPen dnaPen(QColor(255, 255, 255), dnaWidth);
-    int psHeight = 6;
-    int geneHeight = 9;
-    int transcriptHeight = 9;
-    int w = width()-lm-rm;
+    //   int psHeight = 6;
+    //int geneHeight = 9;
+    //int transcriptHeight = 9;
+    //int w = width()-lm-rm;
     
-    int currentHeight = 2+fm+tm;    //  // needed for the penwidth..  
+    //int currentHeight = 2+fm+tm;    //  // needed for the penwidth..  
     // first let's draw the genes,, 
     QPainter* p = new QPainter(pixmap);
     //  cout << "painting for the region " << endl;
-    for(int i=0; i < drawings.size(); i++){
+    for(uint i=0; i < drawings.size(); i++){
       drawings[i]->draw(p);
     }
     if(selectingRegion){
@@ -1290,7 +1300,7 @@ void LocalRegionWidget::mousePressEvent(QMouseEvent* e){
   lastX = e->x();
   lastY = e->y();
   QPoint point = e->pos();   
-  for(int i=0; i < drawings.size(); i++){
+  for(uint i=0; i < drawings.size(); i++){
     if(drawings[i]->contains(e->pos())){
       drawing = drawings[i];
       box = drawings[i]->findBox(e->pos());
@@ -1763,7 +1773,7 @@ void LocalRegionWidget::makeSequenceRequest(bool saveFile){
 
 void LocalRegionWidget::loadProbeSets(){
   set<int> selected;
-  for(int i=0; i < drawings.size(); i++){
+  for(uint i=0; i < drawings.size(); i++){
     set<int> sel = drawings[i]->selectedProbeSets();
     selected.insert(sel.begin(), sel.end());
   }

@@ -48,9 +48,11 @@ struct Unit {
   Unit* rp;
   virtual bool setNext(Unit* p){
     fp = p;
+    return(true);
   }
   virtual bool setPrior(Unit* p){
     rp = p;
+    return(true);
   }
   virtual int id(){
     return(0);

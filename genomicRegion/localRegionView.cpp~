@@ -110,6 +110,7 @@ LocalRegionView::LocalRegionView(vector<chromRegion>* r, QWidget* parent, const 
   fieldNames.push_back("Ensembl Gene ID");
   fieldNames.push_back("External Gene ID");
   fieldNames.push_back("Description");
+  fieldNames.push_back("Synonyms");
   fieldNames.push_back("Ensembl Family ID");
   fieldNames.push_back("Family Description");
   fieldNames.push_back("InterPro Description");

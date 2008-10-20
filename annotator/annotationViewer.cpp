@@ -75,7 +75,7 @@ void AnnotationViewer::updateWidgets(probe_data* pdata){
   //  clearWidgets();
   //cout << "cleared Widgets, and am about to make some new ones" << endl;
   int myId = client->userId;
-  for(int i=0; i < pdata->annotations.size(); i++){
+  for(uint i=0; i < pdata->annotations.size(); i++){
     /// ok we'll need to find out what our identity is later, but for now assume we can edit.. 
     /// and we'll need to connect some signals and stuff here later on..
     // use the client pointer to determine what user id I have.. and so forth..
@@ -98,7 +98,7 @@ void AnnotationViewer::updateSessionWidgets(probe_data* pdata){
   //clearWidgets();
   //cout << "cleared Widgets, and am about to make some new ones" << endl;
   int myId = client->userId;
-  for(int i=0; i < pdata->sessions.size(); i++){
+  for(uint i=0; i < pdata->sessions.size(); i++){
     /// ok we'll need to find out what our identity is later, but for now assume we can edit.. 
     /// and we'll need to connect some signals and stuff here later on..
     // use the client pointer to determine what user id I have.. and so forth..
@@ -140,12 +140,12 @@ void AnnotationViewer::addLabel(QString labelString){
   
     
 void AnnotationViewer::clearWidgets(){
-  for(int i=0; i < widgets.size(); i++){
+  for(uint i=0; i < widgets.size(); i++){
     widgets[i]->hide();
     delete widgets[i];
   }
   widgets.resize(0);
-  for(int i=0; i < labels.size(); i++){
+  for(uint i=0; i < labels.size(); i++){
     labels[i]->hide();
     delete labels[i];
   }
@@ -163,11 +163,11 @@ void AnnotationViewer::clearWidgets(){
 void AnnotationViewer::resizeEvent(QResizeEvent* e){
   // need to resize all the widgets. 
   frame->resize(scroll->viewport()->width(), frame->height());
-  for(int i=0; i < widgets.size(); i++){
+  for(uint i=0; i < widgets.size(); i++){
     widgets[i]->setFixedWidth(scroll->viewport()->width());
     widgets[i]->setFixedHeight(widgets[i]->sizeHint().height());
   }
-  for(int i=0; i < labels.size(); i++){
+  for(uint i=0; i < labels.size(); i++){
     labels[i]->setFixedWidth(scroll->viewport()->width());
   }
   //update();
@@ -177,7 +177,7 @@ void AnnotationViewer::includeGenes(bool include){
   AnnotationWidget* aw = (AnnotationWidget*)sender();
   map<int, int>::iterator it;
   if(include){
-    for(int i=0; i < aw->annotation.otherMembers.size(); i++){
+    for(uint i=0; i < aw->annotation.otherMembers.size(); i++){
       it = includedGenes.find(aw->annotation.otherMembers[i]);
       if(it == includedGenes.end()){
 	includedGenes.insert(make_pair(aw->annotation.otherMembers[i], 1));
@@ -186,7 +186,7 @@ void AnnotationViewer::includeGenes(bool include){
       }
     }
   }else{
-    for(int i=0; i < aw->annotation.otherMembers.size(); i++){
+    for(uint i=0; i < aw->annotation.otherMembers.size(); i++){
       it = includedGenes.find(aw->annotation.otherMembers[i]);
       if((*it).second > 1){
 	(*it).second--;
@@ -199,7 +199,7 @@ void AnnotationViewer::includeGenes(bool include){
   // more than one, -it doesn't make much sense to load the current one
   loadIncluded->setDisabled(includedGenes.size() < 2);
   QString setSize;
-  setSize.sprintf("Set size : %d", includedGenes.size());
+  setSize.sprintf("Set size : %d", (int)includedGenes.size());
   includedGeneCount->setText(setSize);
   //cout << "Number of Genes Included : " << includedGenes.size() << endl;
 }

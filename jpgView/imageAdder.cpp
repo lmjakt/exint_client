@@ -169,7 +169,7 @@ void ImageAdder::setTissues(vector<tissue> t){
     tissueMap.erase(tissueMap.begin());
   }
   tissueChooser->insertItem("-----------");
-  for(int i=0; i < tissues.size(); i++){
+  for(uint i=0; i < tissues.size(); i++){
     QString tname = tissues[i].tissueName.c_str();
     tname += "  ";
     QString age;
@@ -416,7 +416,7 @@ void ImageAdder::newStatus(StatusMessage message){
     }else{
       cerr << "Got a notification, but some problem.. " << endl;
       QString errorMessage = "Server had some problem adding the image to the database please talk to your admin\n";
-      for(int i=0; i < message.errorMessages.size(); i++){
+      for(uint i=0; i < message.errorMessages.size(); i++){
 	errorMessage += message.errorMessages[i];
 	errorMessage += "\n";
       }

@@ -65,13 +65,13 @@ void ProtocolViewer::setProtocol(Protocol* prot){
   cout << "setting protocol : " << endl;
   protocol = prot;
   // delete steps..
-  for(int i=0; i < steps.size(); i++){
+  for(uint i=0; i < steps.size(); i++){
     delete steps[i];
   }
   // create and link the steps together.. 
   steps.resize(protocol->steps.size());
   cout << "steps size is : " << steps.size() << endl;
-  for(int i=0; i < protocol->steps.size(); i++){
+  for(uint i=0; i < protocol->steps.size(); i++){
     // if only one step, we don't do anything.. which is OK..
     cout << "making a step " << endl;
     steps[i] = new ProtocolStepWidget(this);
@@ -89,7 +89,7 @@ void ProtocolViewer::setProtocol(Protocol* prot){
   //// -- these are addresses.. which we've copied.. I think I have to rethink
   //// -- as we may well lose ownership of these steps, and they may be deleted..
   // then go through and make visible..
-  for(int i=0; i < steps.size(); i++){
+  for(uint i=0; i < steps.size(); i++){
     grid->addWidget(steps[i], i, 0);
     cout << "calling show on the steps : " << endl;
     steps[i]->show();
@@ -125,7 +125,7 @@ void ProtocolViewer::addStep(int pos){
   //cout << "going for the loop man.. " << endl;
   int i = 0;    // the iterator counter.. not very great..
   ProtocolStepWidget* it; //= firstStep;
-  ProtocolStepWidget* lastOne;   // memory.. very ugly, .. hmm.. 
+  ProtocolStepWidget* lastOne = 0;   // memory.. very ugly, .. hmm.. 
   for(it = firstStep; it != 0; it = it->next()){     // i.e. iterate until we get a 0.. 
     //cout << "i : " << i << "  it : " << (int)it << "   it next is " << (int)it->next() << endl;
     if(i == pos){
@@ -297,7 +297,7 @@ QSize ProtocolViewer::sizeHint() const
   //}
 void ProtocolViewer::resizeEvent(QResizeEvent* e){
   //cout << "viewer resize event " << endl;
-  for(int i=0; i < steps.size(); i++){
+  for(uint i=0; i < steps.size(); i++){
     steps[i]->resize(steps[i]->sizeHint());
   }
   layout()->activate();

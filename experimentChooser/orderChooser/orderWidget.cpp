@@ -62,7 +62,7 @@ void OrderWidget::setExperiments(multimap<float, exptInfo> em){
 
 exptPoints OrderWidget::currentPoints(){
   exptPoints pts;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     if(drawPoints[i].active){
       pts.values.push_back(-(float)drawPoints[i].yo);
       pts.indices.push_back(drawPoints[i].dbIndex);
@@ -102,7 +102,7 @@ void OrderWidget::paintEvent(QPaintEvent* e){
   // and then draw a blob at each position for a drawPoint..
   p.setPen(NoPen);
   p.setBrush(QColor(0, 0, 255));     // bright blue man.. let's have something milder later on... 
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     int x = hmargin - pointSize/2 + ( (i+1) * (width() - 2*hmargin)) / (eMap.size()) + drawPoints[i].xo;
     int y = height()/2 - pointSize/2 + drawPoints[i].yo;      
     if(drawPoints[i].active){
@@ -119,7 +119,7 @@ void OrderWidget::paintEvent(QPaintEvent* e){
   p.setFont(QFont("Helvetica", pointsize));
   QString label;
   QRect tRect;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     label.setNum(drawPoints[i].dbIndex);
     tRect.setRect(drawPoints[i].rect.x() - (labelWidth-pointSize)/2, drawPoints[i].rect.y()+pointSize+3, labelWidth, labelWidth);
     if(displayInfo == i){
@@ -131,7 +131,7 @@ void OrderWidget::paintEvent(QPaintEvent* e){
     }
   }
   
-  if(displayInfo > -1 && displayInfo < drawPoints.size()){
+  if(displayInfo > -1 && displayInfo < (int)drawPoints.size()){
     it = eMap.find(drawPoints[displayInfo].index);
     if(it != eMap.end()){
       p.drawText(hmargin, height()-vmargin/2, (*it).second.shortName.c_str());
@@ -173,12 +173,12 @@ void OrderWidget::checkSelected(){
     return;
   }
   QPointArray pts(areaPoints.size());
-  for(int i=0; i < areaPoints.size(); i++){
+  for(uint i=0; i < areaPoints.size(); i++){
     pts.setPoint(i, areaPoints[i]);
   }
   // make a QRegion with the points..
   QRegion r(pts);
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     // get the center of the drawPoint..
     int x = drawPoints[i].rect.x() + drawPoints[i].rect.width()/2;
     int y = drawPoints[i].rect.y() + drawPoints[i].rect.height()/2;
@@ -192,7 +192,7 @@ void OrderWidget::mousePressEvent(QMouseEvent* e){
   // check if we have an overlap with any of the rectangles..
   //  int dispInfo = -1;
   bool foundDot = false;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     if(drawPoints[i].rect.contains(e->pos())){
       //if(e->button() == Qt::LeftButton && drawPoints[i].active){            // the burden of history ..
       if(e->button() == Qt::LeftButton){
@@ -242,7 +242,7 @@ void OrderWidget::mouseReleaseEvent(QMouseEvent* e){
 }
 
 void OrderWidget::resetPoints(){
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     drawPoints[i].yo = 0;
     drawPoints[i].xo = 0;
   }
@@ -250,7 +250,7 @@ void OrderWidget::resetPoints(){
 }
   
 void OrderWidget::allPointsActive(){
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     drawPoints[i].active = true;
   }
   update();
@@ -258,7 +258,7 @@ void OrderWidget::allPointsActive(){
 
 void OrderWidget::allChips(){
   map<float, exptInfo>::iterator it;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     it = eMap.find(drawPoints[i].index);
     if(it != eMap.end()){
       bool show = true;
@@ -304,7 +304,7 @@ void OrderWidget::setActive(map<int, bool> cmap){    // int has to refer to chip
 }
 
 void OrderWidget::noPointsActive(){
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     drawPoints[i].active = false;
   }
   update();
@@ -316,7 +316,7 @@ multimap<float, exptInfo> OrderWidget::exptOrder(){
   // correspond to the correct order..
   // doesn't work.. make a multimap first and read off the numbers from this..
   multimap<float, float> indexOrder;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     // then work out its x positions..
     int x = hmargin - pointSize/2 + ( (i+1) * (width() - 2*hmargin)) / (eMap.size()) + drawPoints[i].xo;
     // ofcourse it might be good to store this, in the point, but .. but this wil do for now..

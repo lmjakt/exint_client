@@ -51,7 +51,7 @@ IshFloatEntry::IshFloatEntry(vector<QString> fieldNames, QWidget* parent, const 
   fieldChooser = new QComboBox(true, this, "fieldChooser");
   fieldChooser->setDuplicatesEnabled(false);
   fieldChooser->insertItem("----------------", 0);
-  for(int i=0; i < fieldNames.size(); i++){
+  for(uint i=0; i < fieldNames.size(); i++){
     fieldChooser->insertItem(fieldNames[i], i+1);
     fields.insert(make_pair(i+1, fieldNames[i]));
     fieldLookup.insert(make_pair(fieldNames[i], i+1));
@@ -78,7 +78,7 @@ IshFloatEntry::IshFloatEntry(vector<QString> fieldNames, QWidget* parent, const 
 
 void IshFloatEntry::setFields(vector<QString> fieldNames){
   // fairly simply stuff.. 
-  for(int i=0; i < fieldNames.size(); i++){
+  for(uint i=0; i < fieldNames.size(); i++){
     int in = fieldChooser->count();
     fieldChooser->insertItem(fieldNames[i], in);
     // and set up the maps accordingly.. 
@@ -90,7 +90,7 @@ void IshFloatEntry::setFields(vector<QString> fieldNames){
 
 
 void IshFloatEntry::newFieldNotification(QString fieldName){
-  /// do something for god's sake.
+  fieldName = fieldName; /// do something for god's sake.
 }
 
 void IshFloatEntry::activated(const QString& text){

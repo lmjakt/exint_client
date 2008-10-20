@@ -71,7 +71,7 @@ ProtocolHolder::ProtocolHolder(int myId, map<int, userInformation>* uInfo, Proto
   timeLabel->setIndent(indent);
   //nameLine->setMargin(indent);
   // Some basic labels..
-  int labelHeight = 15;
+//  int labelHeight = 15;
   QLabel* nameLabel = new QLabel("Protocol Name", this, "nameLabel");
   nameLabel->setMargin(3);
   //  nameLabel->setMinimumHeight(labelHeight);
@@ -214,6 +214,7 @@ void ProtocolHolder::resizeEvent(QResizeEvent* e){
 
 void ProtocolHolder::contentsMoved(int x, int y){
   bottomDistance = viewer->height() - scroll->viewport()->height() - y;
+  x = y;
   cout << "contents moved, bottom distance is now : " << bottomDistance << endl;
 }
 

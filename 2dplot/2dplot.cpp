@@ -73,13 +73,13 @@ void TwoDPlot::plot(vector<vector<float> >& v, vector<int>& exIndex, vector<int>
   
   float min, max;
   min = max = 0;
-  for(int i=0; i < v.size(); i++){
-    for(int j=0; j < v[i].size(); j++){
+  for(uint i=0; i < v.size(); i++){
+    for(uint j=0; j < v[i].size(); j++){
       if(v[i][j] > max){ max = v[i][j];}
       if(v[i][j] < min){ min = v[i][j];}
     }
   }
-  for(int i=0; i < v.size(); i++){
+  for(uint i=0; i < v.size(); i++){
     if(v[i].size() != exIndex.size()){
       cerr << "TwoDPlot plot function BUGGERED as a result of exIndex vector not being the same size as thingy no: " << i << endl;
       return;
@@ -94,7 +94,7 @@ void TwoDPlot::plot(vector<vector<float> >& v, vector<int>& exIndex, vector<int>
 //     }
     // and then the tricky bit, go through each one and add to the appropriate experiment.
     // This sucks as we will use a map iterator to find the appropriate point.. -- usint one defined earlier..
-    for(int j=0; j < exIndex.size(); j++){
+    for(uint j=0; j < exIndex.size(); j++){
       it = pos.find(exIndex[j]);
       if(it != pos.end()){
 	int r, g, b;
@@ -134,7 +134,7 @@ void TwoDPlot::plot(vector<vector<float> >& v, vector<int>& exIndex, vector<int>
     }
   }
   // now it would seem that all of the things would have all of the data , but we don't know what's marked or not..
-  for(int i=0; i < marks.size(); i++){
+  for(uint i=0; i < marks.size(); i++){
     it = pos.find(marks[i]);
     if(it != pos.end()){
       (*it).second.marked = true;
@@ -198,7 +198,7 @@ void TwoDPlot::plot(){
 void TwoDPlot::plotBackground(QPainter* p){
   // assume that painter is set to paint on the pixmap, and everything is sorted.. 
   cout << "Plot Background is here for you .. " << endl;
-  bool simple = true;        // if simple, then just base the density somewhere on the thingy.
+  //bool simple = true;        // if simple, then just base the density somewhere on the thingy.
   // make sigma to be equal to the diagonal distance..
   double w = (double)width();
   double h = (double)height();
@@ -210,8 +210,8 @@ void TwoDPlot::plotBackground(QPainter* p){
   double max = 0;
   double min = 0;     // assume 0 value anyway...
   
-  double a[2];
-  double b[2];    // positions of the things. Let the kernel work out the distance using these..
+  //double a[2];
+  //double b[2];    // positions of the things. Let the kernel work out the distance using these..
   kernelFunction kf;
   // do lots of things.
   for(int i=0; i < width(); i ++){
@@ -291,7 +291,7 @@ void TwoDPlot::setCoordinates(vector<PointCoordinate> pc){
     maxX = minX = pc[0].coords[0];
     maxY = minY = pc[0].coords[1];
   }
-  for(int i=0; i < pc.size(); i++){
+  for(uint i=0; i < pc.size(); i++){
     // size of the coords has to be at least something or other..
     if(pc[i].dimNo < 2){
       cerr << "Point coordinates is too small, we are offically buggered,, i is : " << i << "  and size is : " << pc[i].dimNo << endl;

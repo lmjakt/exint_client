@@ -479,6 +479,8 @@ class LocalRegionWidget : public QWidget
   
   private slots :
     void getSequences();
+  void displaySequences();
+  void makeSequenceRequest(bool saveFile);
   void loadProbeSets();
   void nameProbe();
   void associateWithGene();

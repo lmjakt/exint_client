@@ -413,7 +413,7 @@ Client::Client(QString uName, QString serverName, vector<int> uKeys, int port){
 
   regionSize = 200000;
   currentIndex.resize(1000);
-  for(int i=0; i < currentIndex.size(); i++) { currentIndex[i] = i+1; }
+  for(uint i=0; i < currentIndex.size(); i++) { currentIndex[i] = i+1; }
   emit newIndex(currentIndex.size());
   //// this is kind of bad, but we may change later... 
 }
@@ -457,7 +457,7 @@ void Client::setIndex(vector<int> ind, QString term){
   if(IndexHistory.size() > 1){
     IndexHistory[1].setLast(lastRequested);
   }
-  if(IndexHistory.size() > indexHistorySize){
+  if(IndexHistory.size() > (uint)indexHistorySize){
     IndexHistory.pop_back();
   }
   emit indexHistoryChanged();            // - only for a specific receiver, perhaps.. 
@@ -567,7 +567,7 @@ void Client::createSession(vector<string> words){
   //}
   if(open){
     *t << "<newSession>";
-    for(int i=0; i < words.size(); i++){
+    for(uint i=0; i < words.size(); i++){
       *t << words[i].c_str() << "|";
     }
     *t << ">";
@@ -577,7 +577,7 @@ void Client::createSession(vector<string> words){
   }
   if(recordCommands){
     *commandRecord  << "<newSession>";
-    for(int i=0; i < words.size(); i++){
+    for(uint i=0; i < words.size(); i++){
       *commandRecord << words[i].c_str() << "|";
     }
     *commandRecord << ">" << endl;
@@ -597,7 +597,7 @@ void Client::newAnnotation(int sIndex, vector<int> aGenes, QString note){
     *t << "<newAnnotation>";
     *t << sIndex << "|";
     *t << note << "|";
-    for(int i=0; i < aGenes.size(); i++){
+    for(uint i=0; i < aGenes.size(); i++){
       *t << aGenes[i] << "|";
     }
     *t << ">";
@@ -609,7 +609,7 @@ void Client::newAnnotation(int sIndex, vector<int> aGenes, QString note){
     *commandRecord << "<newAnnotation>"
 		   << sIndex << "|"
 		   << note << "|";
-    for(int i=0; i < aGenes.size(); i++){
+    for(uint i=0; i < aGenes.size(); i++){
       *commandRecord << aGenes[i] << "|";
     }
     *commandRecord << ">" << endl;
@@ -623,7 +623,7 @@ void Client::updateSessionDescription(int sessionIndex, vector<QString> words){
   }
   if(open){
     *t << "<updateSessionDescription>" << sessionIndex << "|" << words[0] << "|" << words[1] << "|";
-    for(int i=2; i < words.size(); i++){
+    for(uint i=2; i < words.size(); i++){
       *t << words[i] << "|";
     }
     *t << ">";
@@ -633,7 +633,7 @@ void Client::updateSessionDescription(int sessionIndex, vector<QString> words){
   }
   if(recordCommands){
     *commandRecord <<  "<updateSessionDescription>" << sessionIndex << "|" << words[0] << "|" << words[1] << "|";
-    for(int i=2; i < words.size(); i++){
+    for(uint i=2; i < words.size(); i++){
       *commandRecord << words[i] << "|";
     }
     *commandRecord << ">" << endl;
@@ -690,7 +690,7 @@ void Client::doGenLookup(QString request){
 }
 
 void Client::getProbeSet(int n){
-  if(n >= currentIndex.size() || n < 0){
+  if((uint)n >= currentIndex.size() || n < 0){
     cerr << "get Probe Set, n is larger than current Index : " << endl;
     return;
   }
@@ -736,7 +736,7 @@ void Client::exportMeans(QString fileName, int normMethod){
     *t << "<ExportMeans>";
     *t << fileName << "|";
     *t << normMethod << "|";
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << "|";
     }
     *t << ">";
@@ -820,7 +820,7 @@ void Client::getDBChoices(){
 }
 
 void Client::doEuclidSort(int n){
-    if(open && n < currentIndex.size()){
+    if(open && (uint)n < currentIndex.size()){
 //	*t << "<euclidCompare>" << currentIndex[n] << ">";
 // comment the above line and uncomment the below lines to switch to old style
 
@@ -840,7 +840,7 @@ void Client::doEuclidSort(int n){
 }
 
 void Client::doBinaryComparison(int up, int down, bool normed){
-  int flushInterval = 250;
+    //int flushInterval = 250;
   sendClientIndex();
   if(open){
 //     *t << "<setClientIndex>";
@@ -880,7 +880,7 @@ void Client::doBinaryComparison(int up, int down, bool normed){
 
 void Client::getStatCollection(){
   // first make sure we sync the current selelction.. 
-  int flushInterval = 250;
+  //int flushInterval = 250;
   sendClientIndex();
   if(open){
 //     *t << "<setClientIndex>";                                //// NOTE PLEASE TRY to change these to synchronisation efforts at some 
@@ -892,7 +892,7 @@ void Client::getStatCollection(){
 //     }
     *t << "<getStatCollection>";
     // and go through the current crop of experiments..
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << ":";
     }
     *t << ">";
@@ -902,12 +902,12 @@ void Client::getStatCollection(){
   }
   if(recordCommands){
     *commandRecord << "<setClientIndex>";                                //// NOTE PLEASE TRY to change these to synchronisation efforts at some 
-    for(int i=0; i < currentIndex.size(); i++){              //// Point as this could have us sending 36000*4 bytes down the pipe
+    for(uint i=0; i < currentIndex.size(); i++){              //// Point as this could have us sending 36000*4 bytes down the pipe
       *commandRecord << currentIndex[i] << ":";                          ///  for no real good reason.. 
     }
     *commandRecord << ">" << endl << "<getStatCollection>";
     // and go through the current crop of experiments..
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *commandRecord << selectedExperiments[i] << ":";
     }
     *commandRecord << ">" << endl;
@@ -917,7 +917,7 @@ void Client::getStatCollection(){
 void Client::doMeanComparison(vector<float> values, vector<int> eIndex, bool normed, bool distribution){
   //cout << "in the Do mean comparison function in client.cpp" << endl;
   if(values.size() != eIndex.size()) { return; }
-  int flushInterval = 250;
+  //int flushInterval = 250;
   sendClientIndex();
   if(open){
 //     *t << "<setClientIndex>";                                //// NOTE PLEASE TRY to change these to synchronisation efforts at some 
@@ -928,7 +928,7 @@ void Client::doMeanComparison(vector<float> values, vector<int> eIndex, bool nor
 //       }
 //     }
     *t << "<doMeanComparison>";
-    for(int i=0; i < values.size(); i++){
+    for(uint i=0; i < values.size(); i++){
       *t << values[i] << ":" << eIndex[i] << ":";
     }
     if(normed){
@@ -943,11 +943,11 @@ void Client::doMeanComparison(vector<float> values, vector<int> eIndex, bool nor
   }
   if(recordCommands){
     *commandRecord << "<setClientIndex>";                                //// NOTE PLEASE TRY to change these to synchronisation efforts at some 
-    for(int i=0; i < currentIndex.size(); i++){              //// Point as this could have us sending 36000*4 bytes down the pipe
+    for(uint i=0; i < currentIndex.size(); i++){              //// Point as this could have us sending 36000*4 bytes down the pipe
       *commandRecord << currentIndex[i] << ":";                          ///  for no real good reason.. 
     }
     *commandRecord << ">" << endl << "<doMeanComparison>";
-    for(int i=0; i < values.size(); i++){
+    for(uint i=0; i < values.size(); i++){
       *commandRecord << values[i] << ":" << eIndex[i] << ":";
     }
     if(normed){
@@ -967,7 +967,7 @@ void Client::doRawComparison(vector<float> values, vector<int> eIndex, bool dist
   // of Experiments that one does the comparisons on.. -- Will do this later...
   //cout << "in Client doRawComparison,, values size: " << values.size() << "\teIndex size: " << eIndex.size() << endl;
   if(values.size() != eIndex.size()) { return; }
-  int flushInterval = 250;
+  //int flushInterval = 250;
   sendClientIndex();
 //   if(open){
 //     *t << "<setClientIndex>";                                //// NOTE PLEASE TRY to change these to synchronisation efforts at some 
@@ -980,7 +980,7 @@ void Client::doRawComparison(vector<float> values, vector<int> eIndex, bool dist
 //    *t << "><doRawComparison>";
   if(open){
     *t << "<doRawComparison>";
-    for(int i=0; i < values.size(); i++){
+    for(uint i=0; i < values.size(); i++){
       *t << values[i] << ":" << eIndex[i] << ":";
     }
     *t << (int)distribution << ":>";
@@ -990,11 +990,11 @@ void Client::doRawComparison(vector<float> values, vector<int> eIndex, bool dist
   }
   if(recordCommands){
     *commandRecord << "<setClientIndex>";                                //// NOTE PLEASE TRY to change these to synchronisation efforts at some 
-    for(int i=0; i < currentIndex.size(); i++){              //// Point as this could have us sending 36000*4 bytes down the pipe
+    for(uint i=0; i < currentIndex.size(); i++){              //// Point as this could have us sending 36000*4 bytes down the pipe
       *commandRecord << currentIndex[i] << ":";                          ///  for no real good reason.. 
     }
     *commandRecord << ">" << endl << "<doRawComparison>";
-    for(int i=0; i < values.size(); i++){
+    for(uint i=0; i < values.size(); i++){
       *commandRecord << values[i] << ":" << eIndex[i] << ":";
     }
     *commandRecord << ">" << endl;
@@ -1002,7 +1002,7 @@ void Client::doRawComparison(vector<float> values, vector<int> eIndex, bool dist
 }
 
 void Client::sendClientIndex(){
-  int flushInterval = 250;
+    //int flushInterval = 250;
   cout << "sendClientIndex" << endl;
   // since we seem to have a problem on Kataoka-san's Intel iMac (at least in emulated) mode
   // with synching of the stream, let's write to a an ostring stream first
@@ -1055,7 +1055,7 @@ void Client::sendClientIndex(){
   }
   if(recordCommands){
     *commandRecord << "<setClientIndex>";
-    for(int i=0; i < currentIndex.size(); i++){
+    for(uint i=0; i < currentIndex.size(); i++){
       *commandRecord << currentIndex[i] << ":";
     }
     *commandRecord << ">" << endl;
@@ -1079,7 +1079,7 @@ void Client::doKCluster(int k, bool localNorm, bool individualNorm, bool meanNor
     *t << "<doKCluster>" << k << "|"
        << (int)localNorm << "|" << (int)individualNorm << "|"
        << (int)meanNorm << "|";
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << "|";
     }
     *t << ">";
@@ -1091,7 +1091,7 @@ void Client::doKCluster(int k, bool localNorm, bool individualNorm, bool meanNor
     *commandRecord << "<doKCluster>" << k << "|"
        << (int)localNorm << "|" << (int)individualNorm << "|"
        << (int)meanNorm << "|";
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *commandRecord << selectedExperiments[i] << "|";
     }
     *commandRecord << ">" << endl;
@@ -1103,7 +1103,7 @@ void Client::compareExperiments(){
   if(open){
     *t << "<compareExperiments>";
     //    *t << "<compareExperiments>";
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << "|";
     }
     *t << ">";
@@ -1119,7 +1119,7 @@ void Client::flatCompareExperiments(float sigma, float order){
     *t << "<flatCompareExperiments>";
     *t << sigma << '|';
     *t << order << '|';
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << "|";
     }
     *t << ">";
@@ -1133,7 +1133,7 @@ void Client::traceExperiments(float sm){
   sendClientIndex();
   if(open){
     *t << "<traceExperiments>";
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << "|";
     }
     *t << sm <<  "|>";
@@ -1148,11 +1148,11 @@ void Client::compareCells(vector<int> a, vector<int> b){
   sendClientIndex();
   if(open){
     *t << "<compareCellGroups>" << a.size() << "|";
-    for(int i=0; i < a.size(); i++){
+    for(uint i=0; i < a.size(); i++){
       *t << a[i] << "|";
     }
     *t << b.size() << "|";
-    for(int i=0; i < b.size(); i++){
+    for(uint i=0; i < b.size(); i++){
       *t << b[i] << "|";
     }
     *t << ">";
@@ -1165,7 +1165,7 @@ void Client::compareCells(vector<int> a, vector<int> b){
        
   
 void Client::doSelectAnovaSort(){
-  int flushInterval = 250;
+    // int flushInterval = 250;
   if(open){
       sendClientIndex();
 
@@ -1177,7 +1177,7 @@ void Client::doSelectAnovaSort(){
 //       }
 //     }
     *t << "<doAnovaSelectSort>";
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << ":";
     }
     *t << ">";
@@ -1187,7 +1187,7 @@ void Client::doSelectAnovaSort(){
   }
   if(recordCommands){
     *commandRecord << "<doAnovaSelectSort>";
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *commandRecord << selectedExperiments[i] << ":";
     }
     *commandRecord << ">" << endl;
@@ -1199,7 +1199,7 @@ void Client::getDevsFromMean(){
     sendClientIndex();  // just in case we changed it..
     *t << "<DevsFromMean>";
     //cout << "selectedExperiments size is : " << selectedExperiments.size() << endl;
-    for(int i=0; i < selectedExperiments.size(); i++){
+    for(uint i=0; i < selectedExperiments.size(); i++){
       *t << selectedExperiments[i] << "|";
     }
     *t << ">";
@@ -1211,7 +1211,7 @@ void Client::getDevsFromMean(){
 
 void Client::doAnovaSort(){
   // first it's necessary to send the current index to the server.
-  int flushInterval = 250;
+  //int flushInterval = 250;
   if(open){
     sendClientIndex();
 //     *t << "<setClientIndex>";
@@ -1311,9 +1311,9 @@ void Client::readyRead(){
       }
       break;
     case 3:
-      cout << "readState is 3::::: dataId: " << dataId << "\tdataSize: " << dataSize << endl;
+//      cout << "readState is 3::::: dataId: " << dataId << "\tdataSize: " << dataSize << endl;
       if(!readArray()){
-	cout << "readArray returned false" << endl;
+//	cout << "readArray returned false" << endl;
 	//socket->waitForMore(100);
 	if(open){
 	  *t << "<pleaseFlush>>";
@@ -1586,7 +1586,7 @@ void Client::parseStatusMessage(){
   // if id is equal to 0, noone is going to take this message, so lets just send out one message with all of the things.
   if(id == 0){
     QString longMessage = "Some Problems, please read carefully\n";
-    for(int i=0; i < messages.size(); i++){
+    for(uint i=0; i < messages.size(); i++){
       longMessage += messages[i];
       longMessage += "\n";
     }
@@ -1942,9 +1942,8 @@ bool Client::parseIndex(){
     //    currentIndex = tIndex;
     emit newIndex(currentIndex.size());        // we keep this separate as the clientWindow can also call the setIndex function.. 
     return(true);
-  }else{
-    return(false);
   }
+  return(false);
 }
 
 bool Client::parseNewRegions(){        // not much just tells us how many regions there are.. 
@@ -1956,6 +1955,7 @@ bool Client::parseNewRegions(){        // not much just tells us how many region
   }
   //cout << "New Region No is : " << regionNo << endl;
   emit newRegionIndex(regionNo);
+  return(true);
   // and here we should set some selector to something..
 }
 
@@ -1963,20 +1963,20 @@ bool Client::parseVitalStatistics(){
   vitalStatistics tempStats;
   tempStats.statNames.resize(idata->qi());
   //  vector<string> statNames(idata->qi());       // no checking. man this is so dangerous.. !!
-  for(int i=0; i < tempStats.statNames.size(); i++){
+  for(uint i=0; i < tempStats.statNames.size(); i++){
     tempStats.statNames[i] = idata->s();
     //cout << "Stat Name : " << tempStats.statNames[i] << endl;
   }
   int statNo = idata->qi();
   tempStats.index.resize(statNo);
   tempStats.stats.resize(tempStats.statNames.size());
-  for(int i=0; i < tempStats.stats.size(); i++){
+  for(uint i=0; i < tempStats.stats.size(); i++){
     tempStats.stats[i].resize(statNo);
   }
   //vector<vitalStatistics> tempStats(statNo);
   for(int i=0; i < statNo; i++){
     tempStats.index[i] = idata->qi();
-    for(int j=0; j < tempStats.stats.size(); j++){
+    for(uint j=0; j < tempStats.stats.size(); j++){
       tempStats.stats[j][i] = idata->f();
       //cout << "Stat for j " << j << " : " << i << "\t" << tempStats.stats[j][i] << endl;
     }
@@ -2106,6 +2106,7 @@ void Client::parseExperimentDistances(bool isFlat){
   //cout << "This is in the parseExperiment Distances thingy.." << endl;
   int geneNo = idata->qi();
   float sigma, order;
+  sigma = order = 1.0;
   if(isFlat){
     sigma = idata->f();
     order = idata->f();
@@ -2168,7 +2169,7 @@ bool Client::parseGenomicRegionProbeSetMatches(){
     int afLength = idata->qi();
     int alignLength = idata->qi();
     //int af_n_count = idata->qi();
-    int af_n_count = 0;
+//    int af_n_count = 0;
     int match = idata->qi();
     double expect = idata->d();
     // and that then is it..
@@ -2323,7 +2324,7 @@ bool Client::parseGenomicRegion(){
   //cout << "read in the first information" << endl;
   //cout << "parsing ensembl genes : " << endl;
   while(idata->qi() == 1){
-    cout << "Receiving Ensembl Gene : " << endl;
+      //cout << "\nReceiving Ensembl Gene : " << endl;
     int gIndex = idata->qi();
     string ensId = idata->s();
     int gStart = idata->qi();
@@ -2375,14 +2376,14 @@ bool Client::parseGenomicRegion(){
     int strand = idata->qi();
     int tlength = idata->qi();
     Transcript tempTranscript(source, id, chromosome, cstart, cend, strand, tlength);
-    //cout << "\t\t RECEived transcript id : " << id << "\tstart : " << cstart << "\tend : " << cend << endl;
+    //   cout << "\t\t RECEived transcript id : " << id << "\tstart : " << cstart << "\tend : " << cend << "  source: " << source << endl;
     int exonNo = idata->qi();
     for(int i=0; i < exonNo; i++){
       int start = idata->qi();
       int end = idata->qi();
       int estart = idata->qi();
       int eend = idata->qi();
-      //cout << "\t\tRecevied exon start : " << start << "\tend : " << end << endl; 
+      //cout << "\t\t\tRecevied exon start : " << start << "\tend : " << end << endl; 
       tempTranscript.addExon(Exon(start, end, estart, eend));
     }
     tempRegion.addTranscript(tempTranscript);
@@ -3157,7 +3158,7 @@ void Client::commitProtocolToDB(Protocol* protocol){
      << protocol->parentId << "|"
      << cleanName << "|" << cleanDescription << "|"
      << protocol->steps.size() << "|";
-  for(int i=0; i < protocol->steps.size(); i++){
+  for(uint i=0; i < protocol->steps.size(); i++){
     cleanDescription = protocol->steps[i]->description.c_str();
     cleanText2(cleanDescription, "\\|");
     *t << protocol->steps[i]->id << "|"
@@ -3458,7 +3459,7 @@ void Client::commitImageToDB(ishImageSet data){
      << data.fileName << "|"
      << data.comments.size() << "|";
   cout << "Data comments size is : " << data.comments.size() << endl;
-  for(int i=0; i < data.comments.size(); i++){
+  for(uint i=0; i < data.comments.size(); i++){
     *t << data.comments[i].index << "|"
        << data.comments[i].comment << "|";
   }
@@ -3496,7 +3497,7 @@ void Client::readCommandFile(QString file){
 
 char* copyString(string line){
   char* bytes = new char[line.length()];
-  for(int i=0; i < line.length(); i++){
+  for(uint i=0; i < line.length(); i++){
     bytes[i] = line[i];     // ??
   }
   return(bytes);
@@ -3542,16 +3543,16 @@ void Client::doTheAbuse(){
   // and we will repeat this a number of times... dependant on some variable.. (later on, take a value from somewhere)..
   int commandNo = 4;    // small number to begin with..
   int maxLength = 50000;  // not to bad.. -- but likely to be really quite confusing..
-  int mlength;      // dependant on the choice of abuse.. 
-  int clength;
+  int mlength=0;      // dependant on the choice of abuse.. 
+  int clength=0;
   int tempLength;
   int expandLength;
-  char* messageBytes;
-  char* commandBytes;   // so we can independently change these around.. 
+  char* messageBytes=0;
+  char* commandBytes=0;   // so we can independently change these around.. 
   char* tempBytes;      // use as copy buffer if necessary.. 
   float mutFrequency;
   int maxCount = 100000;
-  int counter=0;
+  //int counter=0;
   // choose commands at random, and then randomise in a random manner.. 
   //  QTimer* timer = new QTimer(this);  
   //connect(timer, SIGNAL(timeout()), this, SLOT
@@ -3563,7 +3564,7 @@ void Client::doTheAbuse(){
     int command = rand() % commands.size();   // a random command.. 
     int message = command;
     if(rand() % 2){                             // i.e. if odd number,, i.e. 50 % of the time..
-      int message = rand() % messages.size();   // i.e. half the time make a random mixture of command and message.. and then mutate.. 
+      message = rand() % messages.size();   // i.e. half the time make a random mixture of command and message.. and then mutate.. 
     }
     cout << "decider is Now : " << decider << endl;
     switch(decider){

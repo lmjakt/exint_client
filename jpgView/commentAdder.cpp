@@ -38,7 +38,7 @@ CommentAdder::CommentAdder(vector<ishAnnotationField> flds, QWidget* parent, con
   fieldChooser = new QComboBox(false, this, "fieldChooser");
   fieldChooser->insertItem("-----------");
   // and then we get to inser some more.. 
-  for(int i=0; i < fields.size(); i++){
+  for(uint i=0; i < fields.size(); i++){
     fieldChooser->insertItem(fields[i].fieldName);
     fieldIndex.insert(make_pair(i+1, fields[i]));  // copy constrcuctor, but maybe that makes life easy.
   }
@@ -78,7 +78,7 @@ void CommentAdder::setIshAnnotationFields(vector<ishAnnotationField> flds){
   fieldIndex.erase(fieldIndex.begin(), fieldIndex.end());
   fieldChooser->clear();
   fieldChooser->insertItem("-----------");
-  for(int i=0; i < fields.size(); i++){
+  for(uint i=0; i < fields.size(); i++){
     fieldChooser->insertItem(fields[i].fieldName);
     fieldIndex.insert(make_pair(i+1, fields[i]));      // hmm to sort implement < in the struct and sort before.. 
   }

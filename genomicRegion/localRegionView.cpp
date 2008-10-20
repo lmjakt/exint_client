@@ -178,7 +178,7 @@ void LocalRegionView::setPSet(int p){
 
 void LocalRegionView::displayTranscriptInfo(string source, string id){
   Transcript transcript;
-  for(int i=0; i < regions->size(); i++){
+  for(uint i=0; i < regions->size(); i++){
     transcript = (*regions)[i].getTranscript(source, id);
     if(transcript.length){
       break;
@@ -230,10 +230,10 @@ void LocalRegionView::setData(int g){
   ts << "<qt>";
   ts << "<table width=90% bgcolor=\"#192828\" cellspacing=0 border=0><tr><th colspan=2 align=center>" << fontd << "Ensembl Annotation</th></tr>" << fend;
   // first let's find the gene in the regions data structure, a bit troublesome, but there you go.
-  bool done = false;
+//  bool done = false;
   ensemblGene myGene;
   //vector<ensemblGene>::iterator pit;
-  for(int i=0; i < regions->size(); i++){
+  for(uint i=0; i < regions->size(); i++){
     myGene = (*regions)[i].getGene(g);
     if(myGene.dbIndex){
       break;
@@ -265,7 +265,7 @@ void LocalRegionView::setData(int g){
     // allelulialh, I found my gene, now just find all of the stuff, and do the ds thingy....
     pair< multimap<string, string>::iterator, multimap<string, string>::iterator > range;
     multimap<string, string>::iterator mit;
-    for(int j=0; j < fieldNames.size(); j++){
+    for(uint j=0; j < fieldNames.size(); j++){
       range = myGene.annotation.equal_range(fieldNames[j]);
       for(mit = range.first; mit != range.second; mit++){
 	ts << "<tr><td width=\"20%\">" << fontd << (*mit).first.c_str() << fend << "</td><td width=80%>"

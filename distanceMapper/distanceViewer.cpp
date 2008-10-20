@@ -145,10 +145,10 @@ DistanceViewer::~DistanceViewer(){
   delete mapper;    // main things to delete.. 
   
   // and delete the data that we are not going to be using anymore.. 
-  for(int i=0; i < points.size(); i++){
+  for(uint i=0; i < points.size(); i++){
     cout << "deleting from : " << i << endl;
     cout << "points " << i << "   size is " << points[i].size() << endl;
-    for(int j=0; j < points[i].size(); j++){
+    for(uint j=0; j < points[i].size(); j++){
       delete points[i][j];
     }
   }
@@ -216,14 +216,14 @@ void DistanceViewer::updatePoints(){
 	pointMutex.unlock();
 	return;
     }
-    if(!mapper->calculating && followFrame >= points.size()){
+    if(!mapper->calculating && followFrame >= (int)points.size()){
 	cout << "stopping the timer.. " << endl;
 	watchTimer->stop();
 //	pointMutex.unlock();
 //	return;
     }
     vector<dpoint*>& pointRefs = points.back();
-    if(followFrame < points.size()){
+    if((uint)followFrame < points.size()){
 	pointRefs = points[followFrame];
 	followFrame++;
     }
@@ -262,7 +262,7 @@ void DistanceViewer::replay(){
 
 void DistanceViewer::updateFrame(){
   cout << "calling updateFrame frame is : " << frame << endl;
-  if(frame >= points.size()){
+  if(frame >= (int)points.size()){
     frameTimer->stop();
     return;
   }

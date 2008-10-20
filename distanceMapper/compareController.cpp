@@ -38,7 +38,7 @@ CompareController::CompareController(QWidget* parent, const char* name)
 {
     setCaption("Sample Comparer");
   
-  int labelMargin = 4;
+    //int labelMargin = 4;
   QLabel* fullLabel = new QLabel("Full Comparisons", this, "fullLabel");
   QLabel* flatLabel = new QLabel("Flat Comparisons", this, "flatLabel");
   fullLabel->setAlignment(Qt::AlignCenter);
@@ -245,9 +245,9 @@ void CompareController::recordDistances(exptDistanceInfo& info){
     cerr << "Values and experiments are different sizes can't really do much about that. " << endl;
     return;
   }
-  for(int i=0; i < info.experiments.size(); i++){
+  for(uint i=0; i < info.experiments.size(); i++){
     out2 << i + 1;
-    for(int j=0; j < info.values[i].size() && j < info.experiments.size(); j++){
+    for(uint j=0; j < info.values[i].size() && j < info.experiments.size(); j++){
       out << i + 1 << "\t" << j+1 << "\t" << info.experiments[i] << "\t" << info.experiments[j] << "\t" << info.values[i][j] << "\t" << info.values[i][j]* info.values[i][j] << "\t"
 	  << info.values[i][j]/info.geneNo << "\t" << (info.values[i][j]* info.values[i][j])/info.geneNo << endl ;
       out2 << "\t" << info.values[i][j] << "\t" <<  info.values[i][j]*info.values[i][j] << "\t" << info.values[i][j]/info.geneNo << "\t" <<  (info.values[i][j]*info.values[i][j])/info.geneNo;

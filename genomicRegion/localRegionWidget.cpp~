@@ -1203,7 +1203,7 @@ void LocalRegionWidget::newData(int i, int g){
     top = drawings[i]->maxy();    // the new max y..
   }
   if(drawings.size()){
-    recommendedSize = QSize(width(), drawings.back()->maxy());
+    recommendedSize = QSize(width(), drawings.back()->maxy() + transcriptTypes.size() * (typeHeight + typeMargin));
   }else{
     recommendedSize = QSize(width(), height());
   }

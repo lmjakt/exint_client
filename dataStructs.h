@@ -158,7 +158,7 @@ struct IndexSet {              // bad name, -- but contains a set of probe set i
   ~IndexSet(){}
   
   void setLast(int i){
-    if(i < Index.size()){
+    if((uint)i < Index.size()){
       LastRequest = i;
     }
   }
@@ -336,6 +336,7 @@ struct ishFloatInsert {
   
   ishFloatInsert(QString fn, float v, bool n=false){
     ishProbeId = 0;
+    //////// The next is problematic on 64 bit systems. All I wanted is a unique id.
     id = (int)this;
     errorNo = 0;
     errorString = "";
@@ -411,7 +412,7 @@ struct ish_annotation {
     numerical = true;
     annotationId = annId;
     fieldName = fName;
-    probeId = pid;
+    probeId = (uint)pid;
   }
   ish_annotation(){
     userId = 0;

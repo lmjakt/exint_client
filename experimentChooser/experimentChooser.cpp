@@ -92,14 +92,14 @@ void ExperimentChooser::updateExperiments(multimap<float, exptInfo> info){
   // structs..
   bool wasVisible = isVisible();
   if(wasVisible) { hide(); }
-  for(int i=0; i < eWidgets.size(); i++){
+  for(uint i=0; i < eWidgets.size(); i++){
     eWidgets[i]->hide();
     delete eWidgets[i];
   }
   eWidgets.resize(0);
   eWidgets.reserve(info.size());
   chips.erase(chips.begin(), chips.end());
-  for(int i=0; i < excludeButtons.size(); i++){
+  for(uint i=0; i < excludeButtons.size(); i++){
       excludeButtons[i]->hide();
       delete(excludeButtons[i]);
   }
@@ -160,14 +160,14 @@ void ExperimentChooser::updateExperimentOrder(multimap<float, exptInfo> em){
 }
 
 void ExperimentChooser::excludeIfNoChip(int chip){
-    for(int i=0; i < eWidgets.size(); i++){
+    for(uint i=0; i < eWidgets.size(); i++){
 	eWidgets[i]->excludeIfNoChip(chip);
     }
     selectionChanging(0, false);   // ignores the values..
 }
 
 void ExperimentChooser::setAllActive(){ 
-    for(int i=0; i < eWidgets.size(); i++){
+    for(uint i=0; i < eWidgets.size(); i++){
 	eWidgets[i]->setState(true);
     }
     selectionChanging(0, false);
@@ -186,20 +186,21 @@ void ExperimentChooser::setActivityStates(map<int, bool> states){
   }
 }
 
+/// Not sure why, but we don't seem to use the n or the boolean below.. ?
 void ExperimentChooser::selectionChanging(int n, bool b){  // should be able to use this in a better manner.. 
   vector<int> selection;
-  for(int i=0; i < eWidgets.size(); i++){
+  for(uint i=0; i < eWidgets.size(); i++){
     if(eWidgets[i]->active){
       selection.push_back(eWidgets[i]->eInfo.dbaseIndex);
     }
   }
-  cout << endl << "size of newExptSelection  " << selection.size() << endl;
+  cout << endl << "size of newExptSelection  " << selection.size() << " " << n << "  " << b << endl;
   emit newExptSelection(selection);     // hmm, probably OK for now. I shouldn't have had that bun thing, has stopped my brain from functioning
 }
 
 void ExperimentChooser::markSelectionChanging(int, bool){
   vector<int> selection;
-  for(int i=0; i < eWidgets.size(); i++){
+  for(uint i=0; i < eWidgets.size(); i++){
     if(eWidgets[i]->markMe){
       selection.push_back(eWidgets[i]->eInfo.dbaseIndex);
     }

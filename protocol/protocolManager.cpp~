@@ -1,3 +1,27 @@
+//Copyright Notice
+/*
+    eXintegrator integrated expression analysis system
+    Copyright (C) 2004  Martin Jakt & Okada Mitsuhiro
+  
+    This file is part of the eXintegrator integrated expression analysis system. 
+    eXintegrator is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version. 
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+  
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    PS. If you can think of a better name, please let me know...
+*/
+//End Copyright Notice
+
 #include "protocolManager.h"
 #include <qlayout.h>
 #include <qpushbutton.h>
@@ -22,6 +46,7 @@ ProtocolManager::ProtocolManager(const int* myId, map<int, userInformation>* uIn
   requestId = 0;
 
   int indent = 5;
+  QLabel* desLabel = new QLabel("Protocol Description", this, "desLabel");
   descriptionView = new QTextEdit(this, "descriptionView");
   descriptionView->setReadOnly(true);
   descriptionView->setMinimumWidth(300);
@@ -47,7 +72,7 @@ ProtocolManager::ProtocolManager(const int* myId, map<int, userInformation>* uIn
   //QPushButton* loadButton = new QPushButton("load/inherit", this, "loadButton");
   //connect(loadButton, SIGNAL(clicked()), this, SLOT(loadProtocol()) );
 
-  QHBoxLayout* hbox = new QHBoxLayout(this);
+  QHBoxLayout* hbox = new QHBoxLayout(this, 1, 2);
   QVBoxLayout* vbox = new QVBoxLayout();
   hbox->addLayout(vbox);
   vbox->addWidget(listView);
@@ -57,8 +82,9 @@ ProtocolManager::ProtocolManager(const int* myId, map<int, userInformation>* uIn
   //bbox->addWidget(newButton);
   //vbox->addWidget(loadButton);
 
-  rbox = new QVBoxLayout(3);
-  hbox->addLayout(rbox);
+  rbox = new QVBoxLayout(hbox, 2);
+  //  hbox->addLayout(rbox);
+  rbox->addWidget(desLabel);
   rbox->addWidget(descriptionView);
   
   rbox->addWidget(creatorLabel);
@@ -134,6 +160,7 @@ void ProtocolManager::setProtocolCollection(int reqid, ProtocolCollection* coll)
       // it is possible that we have been here before,, so check the useful void pointer to find out..
       if(!prot->pointer){   // then make a new one.. 
 	//cout << "and the pointer doesn't apper to be defined : " << endl; 
+	cout << "parent is listview making qlistview item with name of " << prot->name.c_str()  << endl; 
 	QListViewItem* item = new QListViewItem(listView, prot->name.c_str());
 	//cout << "address of item is : " << (int)item << endl;
 	prot->pointer = (void*)item;
@@ -144,6 +171,7 @@ void ProtocolManager::setProtocolCollection(int reqid, ProtocolCollection* coll)
     if(!prot->pointer){
       //cout << "protocol isn't top level but has an inheritance of some sort " << endl;
       //cout << "and the parents pointer is : " << (int)prot->parent->pointer << endl;
+      cout << "making a daughter qlistview item with name of " << prot->name.c_str()  << endl; 
       QListViewItem* item = new QListViewItem((QListViewItem*)prot->parent->pointer, prot->name.c_str());
       prot->pointer = (void*)item;
       protocolMap.insert(make_pair(item, prot));

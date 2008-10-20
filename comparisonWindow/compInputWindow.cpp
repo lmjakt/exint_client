@@ -56,7 +56,7 @@ CompInputWindow::CompInputWindow(map<float, exptInfo>* em, QWidget* parent, cons
 
 exptPoints CompInputWindow::currentPoints(){
   exptPoints pts;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     if(drawPoints[i].active && !drawPoints[i].hidden){
       pts.values.push_back(-(float)drawPoints[i].yo);
       pts.indices.push_back(drawPoints[i].dbIndex);
@@ -99,7 +99,7 @@ void CompInputWindow::paintEvent(QPaintEvent* e){
   int drawPos1 = 0;
   int drawPos2;
   while(1){
-    if(first >= drawPoints.size()){
+    if(first >= (int)drawPoints.size()){
       break;
     }
     if(drawPoints[first].hidden){
@@ -116,7 +116,7 @@ void CompInputWindow::paintEvent(QPaintEvent* e){
     drawPos2 = drawPos1 + 1;
     //cout << "first is : " << first << " second is : " << second << endl;
     while(1){
-      if(second >= drawPoints.size()){
+      if(second >= (int)drawPoints.size()){
 	second = -1;
 	break;        // but need to identify the failure somehow..
       }
@@ -152,7 +152,7 @@ void CompInputWindow::paintEvent(QPaintEvent* e){
   p.setPen(NoPen);
   p.setBrush(QColor(0, 0, 255));     // bright blue man.. let's have something milder later on... 
   int xi = 0;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
       if(drawPoints[i].hidden){
 	  drawPoints[i].rect.setRect(-100, -100, pointSize, pointSize);
 	  continue;
@@ -177,13 +177,13 @@ void CompInputWindow::paintEvent(QPaintEvent* e){
 //  p.setFont(QFont("Helvetica", pointsize));
   QString label;
   QRect tRect;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
       if(drawPoints[i].hidden){
 	  continue;
       }
       label.setNum(drawPoints[i].dbIndex);
       tRect.setRect(drawPoints[i].rect.x() - (labelWidth-pointSize)/2, drawPoints[i].rect.y()+pointSize+3, labelWidth, labelWidth);
-      if(displayInfo == i){
+      if(displayInfo == (int)i){
 	  p.setPen(QPen(QColor(50, 0, 150), 1));
 	  p.drawText(tRect, Qt::AlignCenter, label);
 	  p.setPen(QPen(QColor(200, 0, 50), 1));
@@ -192,7 +192,7 @@ void CompInputWindow::paintEvent(QPaintEvent* e){
       }
   }
   
-  if(displayInfo > -1 && displayInfo < drawPoints.size()){
+  if(displayInfo > -1 && displayInfo < (int)drawPoints.size()){
     it = eMap->find(drawPoints[displayInfo].index);
     if(it != eMap->end()){
       p.drawText(hmargin, height()-vmargin/2, (*it).second.shortName.c_str());
@@ -223,7 +223,7 @@ void CompInputWindow::mousePressEvent(QMouseEvent* e){
   // check if we have an overlap with any of the rectangles..
   //  int dispInfo = -1;
   bool foundDot = false;
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     if(drawPoints[i].rect.contains(e->pos())){
       if(e->button() == Qt::LeftButton && drawPoints[i].active){
 	movingPoint = &drawPoints[i];
@@ -252,14 +252,14 @@ void CompInputWindow::mouseReleaseEvent(QMouseEvent* e){
 }
 
 void CompInputWindow::resetPoints(){
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     drawPoints[i].yo = 0;
   }
   update();
 }
   
 void CompInputWindow::allPointsActive(){
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     drawPoints[i].active = true;
   }
   update();
@@ -271,7 +271,7 @@ void CompInputWindow::allChips(){
     }
     map<float, exptInfo>::iterator it;
     hiddenNo = 0;
-    for(int i=0; i < drawPoints.size(); i++){
+    for(uint i=0; i < drawPoints.size(); i++){
 	it = eMap->find(drawPoints[i].index);
 	if(it != eMap->end()){
 	    bool show = true;
@@ -353,7 +353,7 @@ void CompInputWindow::setActive(vector<int> samples){
 
 
 void CompInputWindow::noPointsActive(){
-  for(int i=0; i < drawPoints.size(); i++){
+  for(uint i=0; i < drawPoints.size(); i++){
     drawPoints[i].active = false;
   }
   update();

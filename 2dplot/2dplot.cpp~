@@ -1,3 +1,27 @@
+//Copyright Notice
+/*
+    eXintegrator integrated expression analysis system
+    Copyright (C) 2004  Martin Jakt & Okada Mitsuhiro
+  
+    This file is part of the eXintegrator integrated expression analysis system. 
+    eXintegrator is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version. 
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+  
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    PS. If you can think of a better name, please let me know...
+*/
+//End Copyright Notice
+
 #include "2dplot.h"
 #include "../stat/kernelFunction.h"
 #include <qpainter.h>
@@ -269,8 +293,8 @@ void TwoDPlot::setCoordinates(vector<PointCoordinate> pc){
   }
   for(int i=0; i < pc.size(); i++){
     // size of the coords has to be at least something or other..
-    if(pc[i].coords.size() < 2){
-      cerr << "Point coordinates is too small, we are offically buggered,, i is : " << i << "  and size is : " << pc[i].coords.size() << endl;
+    if(pc[i].dimNo < 2){
+      cerr << "Point coordinates is too small, we are offically buggered,, i is : " << i << "  and size is : " << pc[i].dimNo << endl;
     }else{
       //cout << "Making pair with x : " << pc[i].coords[0] << "  y : " << pc[i].coords[1] << endl;
       pos.insert(make_pair(pc[i].index, twoDPos(pc[i].coords[0], pc[i].coords[1])));
