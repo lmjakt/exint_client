@@ -38,7 +38,20 @@ StressPlotter::StressPlotter(QWidget* parent, const char* name)
     setCaption("Stress Plotter");
     maxValue = 0;
     minValue = 0;
+
+    dimColors.push_back(new QColor(100, 0, 30));
+    dimColors.push_back(new QColor(30, 0, 100));
+    dimColors.push_back(new QColor(70, 0, 60));
+    dimColors.push_back(new QColor(43, 43, 43));
+    dimColors.push_back(new QColor(0, 70, 60));
+    dimColors.push_back(new QColor(0, 100, 30));
+
     resize(300, 300);
+}
+
+StressPlotter::~StressPlotter(){
+    for(uint i=0; i < dimColors.size(); ++i)
+	delete dimColors[i];
 }
 
 void StressPlotter::setData(vector<stressInfo> stress){
@@ -64,22 +77,6 @@ void StressPlotter::paintEvent(QPaintEvent* e){
     QPainter p(&pix);
     drawStress(&p, w, h);
     
-//     p.setPen(QPen(QColor(255, 255, 255), 1));
-//     p.setBrush(Qt::NoBrush);
-//     for(uint i= 0; i < values.size(); ++i){
-// 	if(!values[i].stress)
-// 	    continue;
-// 	int x = (w * i) / values.size();
-// 	int y =  h - (float(h) *  values[i].stress / maxValue);
-// 	int dimY = height() - height() * values[i].currentDF();
-// 	p.setPen(QPen(QColor(100, 0, 30), 1));
-// 	p.drawLine(x, height(), x, dimY);
-// 	p.setPen(QPen(QColor(255, 255, 255), 1));
-// 	p.drawEllipse(x, y, 4, 4);
-// //	if(values.stress[i])
-// //	    cout << "stress : " << values.stress[i] << " p: " << i << "  --> " << y << ", " << x << endl;
-	
-//     }
     bitBlt(this, 0, 0, &pix, 0, 0);
 }
 
@@ -94,10 +91,23 @@ void StressPlotter::drawStress(QPainter* p, int w, int h){
 	    continue;
 	int x = (w * i) / values.size();
 	int y =  h - (int)(float(h) *  values[i].stress / maxValue);
-	int dimY = (int)(h - h * values[i].currentDF());
-	p->setPen(QPen(QColor(100, 0, 30), 1));
-	p->drawLine(x, height(), x, dimY);
+	drawDims(p, x, values[i], h);
+//	int dimY = (int)(h - h * values[i].currentDF());
+//	p->setPen(QPen(QColor(100, 0, 30), 1));
+//	p->drawLine(x, height(), x, dimY);
 	p->setPen(QPen(QColor(255, 255, 255), 1));
 	p->drawEllipse(x, y, 4, 4);
     }
 }
+
+void StressPlotter::drawDims(QPainter* p, int xp, stressInfo& si, int h){
+    float dimMult = 1.0 / (float)si.dimFactors.size();
+    float y1 = 1.0;
+    for(uint i=0; i < si.dimFactors.size(); ++i){
+	float y2 = y1 - (dimMult * si.dimFactors[i]);
+	p->setPen(QPen(*(dimColors[ i % dimColors.size() ]), 1));
+	p->drawLine(xp, (int)(h * y1), xp, (int)(h * y2));
+	y1 = y2;
+    }
+}
+    

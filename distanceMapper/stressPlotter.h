@@ -29,20 +29,25 @@
 #include <qpainter.h>
 #include <vector>
 #include "distanceMapper.h"
+#include <qcolor.h>
 
 class StressPlotter : public QWidget
 {
     Q_OBJECT
 	public :
 	StressPlotter(QWidget* parent=0, const char* name=0);
+    ~StressPlotter();
     void setData(std::vector<stressInfo> stress);
     
     private :
 	void paintEvent(QPaintEvent* e);
     void drawStress(QPainter* p, int w, int h);
+    void StressPlotter::drawDims(QPainter* p, int xp, stressInfo& si, int h);
     std::vector<stressInfo> values;
     float maxValue;
     float minValue;
+    
+    std::vector<QColor*> dimColors;
 
 };
 
