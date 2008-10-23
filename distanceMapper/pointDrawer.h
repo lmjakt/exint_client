@@ -30,6 +30,7 @@
 #include <qrect.h>
 #include <qpoint.h>
 #include <qpopupmenu.h>
+#include <qstring.h>
 #include <vector>
 #include <set>
 
@@ -49,6 +50,7 @@ class PointDrawer : public QWidget
   private slots :
     void compareCellTypes();
   void setcoords();
+  void toggleRecording();
 
   private :
     void paintEvent(QPaintEvent* e);
@@ -72,6 +74,10 @@ class PointDrawer : public QWidget
   int lastX, lastY;      // so that I can use QRegion::translate .. 
   
   QPopupMenu* menu;
+
+  // recording movies.. well images that can be recorded..  ?
+  QString dirName;
+  uint frameCounter;   // start counting from 1. 0 indicates don't record.. 
 
   signals :
     void updatePosition(int, float, float);  // id, x, y, .... 

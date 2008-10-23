@@ -350,7 +350,7 @@ void DistanceMapper::run(){
       
       movePoints();
       resetPoints();
-      cout << "Stress: " << stress << "  dim:";
+      cout << "Stress: " << stress << "  totalDistance: " << totalDistance << "  ratio: " << stress / totalDistance << "  dim:";
       for(int k =0; k < dimensionality; ++k)
 	  cout << "\t" << dimFactors[k];
       cout << endl;

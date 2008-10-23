@@ -32,6 +32,8 @@
 #include <qpixmap.h>
 #include <iostream>
 #include <qpointarray.h>
+#include <qfiledialog.h>
+#include <qdir.h>
 
 using namespace std;
 
@@ -42,9 +44,11 @@ PointDrawer::PointDrawer(QWidget* parent, const char* name)
   setBackgroundMode(NoBackground);    // but really should have something to put it there.. hmm
   movingId = -1;
   regions.resize(0);
+  frameCounter = 0;
   menu = new QPopupMenu(this, "menu");
   menu->insertItem("Compare Cell Types", this, SLOT(compareCellTypes()) );
   menu->insertItem("Set Coordinates", this, SLOT(setcoords()) );
+  menu->insertItem("Record on/off", this, SLOT(toggleRecording()) );
 }
 
 PointDrawer::~PointDrawer(){
@@ -70,7 +74,7 @@ void PointDrawer::setData(vector<dpoint*> p){
   minX = maxX = points[0]->coordinates[0];
   minY = maxY = points[0]->coordinates[1];
   maxStress = points[0]->stress;
-  for(int i=0; i < points.size(); i++){
+  for(uint i=0; i < points.size(); i++){
     if(points[i]->coordinates[0] > maxX){ maxX = points[i]->coordinates[0]; }
     if(points[i]->coordinates[0] < minX){ minX = points[i]->coordinates[0]; }
     if(points[i]->coordinates[1] > maxY){ maxY = points[i]->coordinates[1]; }
@@ -107,7 +111,7 @@ void PointDrawer::paintEvent(QPaintEvent* e){
     QPen attraction(QColor(255, 255, 0), 1);   // yellow
     QPen repulse(QColor(145, 152, 226), 1);    // light blue.. 
     // and let's go through the points and draw them as we see fit.. need some
-    for(int i=0; i < points.size(); i++){
+    for(uint i=0; i < points.size(); i++){
       if(points[i]->dimNo < 2){
 	cerr << "??? bugger me backwards, but the coordinates size is less than two for i : " << i << endl;
 	continue;
@@ -130,7 +134,7 @@ void PointDrawer::paintEvent(QPaintEvent* e){
 	p.drawLine(x, y, x2, y2);   // x2 and y2 are forces and are relative to the current position.. 
       }
     }
-    for(int i=0; i < points.size(); i++){
+    for(uint i=0; i < points.size(); i++){
       if(points[i]->dimNo < 2){
 	cerr << "??? bugger me backwards, but the coordinates size is less than two for i : " << i << endl;
 	continue;
@@ -175,6 +179,17 @@ void PointDrawer::paintEvent(QPaintEvent* e){
   // ando bitblt.. 
   bitBlt(this, 0, 0, &pix, 0, 0);
   // and no need to delete anything as it's all .. nanni..
+  if(frameCounter){
+//      cout << "Frame Counter is " << frameCounter << " dirName " << dirName.latin1() << endl;
+      QPainter p(this);
+      p.setPen(QPen(QColor(200, 0, 0), 1));
+      p.drawText(0, 0, width(), height(), Qt::AlignRight|Qt::AlignBottom, "Rec");
+      QString fname;
+      fname.sprintf("%s/img_%04d.jpg", dirName.latin1(), frameCounter);
+      ++frameCounter;
+//      cout << "And the new file name is : " << fname.latin1() << endl;
+      pix.save(fname, "JPEG", 100);
+  }
 }
 
 void PointDrawer::mousePressEvent(QMouseEvent* e){
@@ -184,7 +199,7 @@ void PointDrawer::mousePressEvent(QMouseEvent* e){
     menu->popup(mapToGlobal(e->pos()));
     return;
   }
-  for(int i=0; i < regions.size(); i++){
+  for(uint i=0; i < regions.size(); i++){
     //cout << "  i: " << i << "  x : " << regions[i].x() << "  y: " << regions[i].y() << endl;
     if(regions[i].contains(e->pos())){
       movingId = i;
@@ -271,7 +286,7 @@ void PointDrawer::checkSelected(){
   cout << "what's up?" << endl;
   // empty a..
   while(a->size()){ a->erase(a->begin()); }
-  for(int i=0; i < points.size(); i++){
+  for(uint i=0; i < points.size(); i++){
     int x = (int)((points[i]->coordinates[0] - minX) * xMult) + margin;
     int y = (int)((points[i]->coordinates[1] - minY) * yMult) + margin;
     if(r.contains(QPoint(x, y))){
@@ -312,4 +327,25 @@ void PointDrawer::compareCellTypes(){
 void PointDrawer::setcoords(){
   cout << "point drawer emitting setCoordinates : " << endl;
   emit setCoordinates();  // and let our owner -- have a look at what the coordinates really are.. hmm .
+}
+
+void PointDrawer::toggleRecording(){
+    if(frameCounter){
+	frameCounter = 0;
+	update();
+	return;
+    }
+    // otherwise get a directory name and set the frameCounter to 1.
+    QDir dir;
+    bool dirMade = false;
+    while(!dirMade){
+	dirName = QFileDialog::getSaveFileName();
+	cout << "dirName is " << dirName << endl;
+	if(dirName.isNull()){
+	    return;
+	}
+	dirMade = dir.mkdir(dirName);
+    }
+    frameCounter=1;
+    update();
 }
