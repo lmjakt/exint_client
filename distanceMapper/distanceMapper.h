@@ -96,8 +96,6 @@ struct componentVector {
 };
 
 struct dpoint {
-  //vector<float> coordinates;    // the current position in n-dimensional space.
-  //vector<float> forceVectors;   // the forces it is subject to... 
     
     float* coordinates;
     float* forceVectors;

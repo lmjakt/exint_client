@@ -202,6 +202,16 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   //  getProbe = new QSpinBox(0, 10000, 1, this);
   connect(getProbe, SIGNAL(valueChanged(int)), this, SLOT(getProbeSet(int)) );
 
+  QPushButton* rmButton = new QPushButton("current", this);
+  connect(rmButton, SIGNAL(clicked()), this, SLOT(removeCurrentFromIndex()) );
+
+  QPushButton* rmBelowButton = new QPushButton("below", this);
+  QPushButton* rmAboveButton = new QPushButton("above", this);
+  QLabel* rmLabel = new QLabel("Remove: ", this);
+
+  connect(rmBelowButton, SIGNAL(clicked()), this, SLOT(removeBelowFromIndex()) );
+  connect(rmAboveButton, SIGNAL(clicked()), this, SLOT(removeAboveFromIndex()) );
+
   getRegion = new LSpinBox(0, 0, 1, this, "Region");    // no range to start with.. 
   //  getRegion = new QSpinBox(0, 0, 1, this);    // no range to start with.. 
   connect(getRegion, SIGNAL(valueChanged(int)), client, SLOT(getRegion(int)) );
@@ -605,6 +615,14 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   vbox->addWidget(annotator);
   //vbox->addWidget(messages);
   //vbox->addWidget(indexSize);
+  QHBoxLayout* rmButtons = new QHBoxLayout;
+  vbox->addLayout(rmButtons);
+  rmButtons->addWidget(rmLabel);
+  rmButtons->addStretch();
+  rmButtons->addWidget(rmBelowButton);
+  rmButtons->addWidget(rmButton);
+  rmButtons->addWidget(rmAboveButton);
+
   vbox->addLayout(spinners);
   
   spinners->addWidget(lineWidth);
@@ -891,21 +909,19 @@ void ClientWindow::newAnnotation(int state, int sessionIndex, QString note){
   
 }
 
-void ClientWindow::changeIndexRange(int n){
+void ClientWindow::changeIndexRange(int n, uint indexPos){
   // first set the indexSize.. 
-//   QString sizeString;
-//   sizeString.setNum(n);
-//   sizeString.prepend("Current Index size:\t");
-//   indexSize->setText(sizeString);
-//   cout << "ClientWindow::changeIndexRange" << endl;
-  //  cout << "chaning the range of getProbe to 0 -> " << n-1 << endl;
   n--;                   // the size of the currentIndex is emitted. As we count from 0, this is one more than the maximum value..
   getProbe->setMaxValue(n);
-  if(getProbe->value() == 0){
-    getProbeSet(0);
-  }else{
-    getProbe->setValue(0);     // which will send the valueChanged signal which will automatically get the probe set anyway.
+  int setValue = 0;
+  if(indexPos <= (uint)n)
+      setValue = (int)indexPos;
+  if(setValue == getProbe->value()){
+      getProbe->setValue(setValue);
+      getProbeSet(setValue);
+      return;
   }
+  getProbe->setValue(0);
 }
 
 
@@ -1292,30 +1308,26 @@ void ClientWindow::saveCurrentState(){
 }
 
 vector<int> split_line(string& line, string& pat){
-  // as above, but uses the pattern for the splitting.. 
-  vector<int> numbers;
-  //  string subWord;
-  numbers.reserve(line.size()/3);
-  uint first = line.find_first_not_of(pat);
-  uint next;
-  while(first != line.npos){
-    next = line.find_first_of(pat, first);
-    if(next == line.npos){
-      // i.e at the end of the line. as first must be true there is something still around..
-      next = line.size();
+    vector<int> numbers;
+    numbers.reserve(line.size()/3);
+    int first = line.find_first_not_of(pat);
+    int next;
+    while(first != (int)line.npos){
+	next = line.find_first_of(pat, first);
+	if(next == (int)line.npos){
+	    // i.e at the end of the line. as first must be true there is something still around..
+	    next = line.size();
+	}
+	numbers.push_back(atoi(line.substr(first, next-first).c_str()));
+	first = line.find_first_not_of(pat, next);
     }
-    numbers.push_back(atoi(line.substr(first, next-first).c_str()));
-    //words.push_back(line.substr(first, next-first));
-    first = line.find_first_not_of(pat, next);
-  }
-  return(numbers);
+    return(numbers);
 }
 
-void ClientWindow::changeIndex(vector<int> v, QString descriptor){
-  cout << "change Index function " << endl;
-  client->setIndex(v, descriptor);
-  //client->currentIndex = v;
-  changeIndexRange(v.size());
+void ClientWindow::changeIndex(vector<int> v, QString descriptor, uint indexPos){
+    client->setIndex(v, descriptor);
+    changeIndexRange(v.size(), indexPos);
+    cout << "and changed the index range to : " << v.size() << endl; 
 }
 
 void ClientWindow::restoreIndex(vector<int> v, int i, QString descriptor){
@@ -1328,80 +1340,110 @@ void ClientWindow::restoreIndex(vector<int> v, int i, QString descriptor){
 
 void ClientWindow::readState(){
   // read a file of numbers and see how it goes... 
-  QString infile = QFileDialog::getOpenFileName();
-  if(infile.isNull()){
-    return;
-  }
-  ifstream in(infile.latin1());
-  if(!in){
-    writeMessage("Couldn't open file");
-    return;
-  }
-  string delimit(",");
-  string line;
-  vector<int> index;
-  int current=0;
-  vector<int> savedIndex;
-  // first line is the silly identifier, return if incorrect.. 
-  if(in >> line){
-    if(line != string("state_file_groovy_isnt_it")){
-      writeMessage("Looks like wrong kind of file");
-      writeMessage("should begin with: state_file_groovy_isnt_it");
-      return;
+    QString infile = QFileDialog::getOpenFileName();
+    if(infile.isNull()){
+	return;
     }
-    //    cout << "Silly identifier: " << line << endl;
-  }else{ return; }
+    ifstream in(infile.latin1());
+    if(!in){
+	writeMessage("Couldn't open file");
+	return;
+    }
+    string delimit(",");
+    string line;
+    vector<int> index;
+    int current=0;
+    vector<int> savedIndex;
+    // first line is the silly identifier, return if incorrect.. 
+    if(in >> line){
+	if(line != string("state_file_groovy_isnt_it")){
+	    writeMessage("Looks like wrong kind of file");
+	    writeMessage("should begin with: state_file_groovy_isnt_it");
+	    return;
+	}
+    }else{ return; }
+    // next the current index
+    if(in >> line){
+	index = split_line(line, delimit);
+    }else{ return; }
+    // and next the current index choice.. 
+    if(in >> line){
+	vector<int> temp = split_line(line, delimit);
+	if(temp.size()){
+	    current = temp[0];
+	}else{
+	    current = index[0];
+	}
+    }
+    // and next the line of saved indices..
+    if(in >> line){
+	savedIndex = split_line(line, delimit);
+    }
+    /// first insert the values of the saved ones into the indicesToSave, then 
+    /// change the currentIndex to this vector, then go through all of these, and they
+    /// should be automatically inserted into the saved list. Then, change the index to the current
+    /// index, and set the value to where we were before..
 
-  // next the current index
-  if(in >> line){
-    //    cout << "index Line\t" << line << endl;
-    index = split_line(line, delimit);
-  }else{ return; }
-  
-  // and next the current index choice.. 
-  if(in >> line){
-    //cout << line << endl;
-    vector<int> temp = split_line(line, delimit);
-    if(temp.size()){
-      current = temp[0];
+    if(savedIndex.size()){
+	changeIndex(savedIndex, "Saved Index Index");
+	for(uint i=0; i < savedIndex.size(); i++){
+	    indicesToSave.insert(savedIndex[i]);
+	    /// and call the getProbeSet for value i..
+	    getProbeSet(i);
+	    /// which should automatically do everything.. 
+	}
+    }
+    
+    // and lets change the index,, not too difficult..
+    changeIndex(index, "State File Index");
+    if(current >= 0 && current < (int)index.size()){
+	getProbe->setValue(current);
     }else{
-      current = index[0];
-      //      return;
+	getProbe->setValue(0);
     }
-  }//else{ return; }
-  // and next the line of saved indices..
-  if(in >> line){
-    //cout << line << endl;
-    savedIndex = split_line(line, delimit);
-  }//else{ return; }
-  
-  for(uint i=0; i < index.size(); i++) { cout << i << "\t" << index[i] << endl; }
-  for(uint i=0; i < savedIndex.size(); i++) { cout << i << "\t" << savedIndex[i] << endl; }
-  cout << "And the current choice is : " << current << endl;
-  /// first insert the values of the saved ones into the indicesToSave, then 
-  /// change the currentIndex to this vector, then go through all of these, and they
-  /// should be automatically inserted into the saved list. Then, change the index to the current
-  /// index, and set the value to where we were before..
-  client->setIndex(savedIndex, "State File Saved");
-  //  client->currentIndex = savedIndex;
-  changeIndexRange(savedIndex.size());
-  for(uint i=0; i < savedIndex.size(); i++){
-    indicesToSave.insert(savedIndex[i]);
-    /// and call the getProbeSet for value i..
-    getProbeSet(i);
-    /// which should automatically do everything.. 
-  }
+}
 
-  // and lets change the index,, not too difficult..
-  client->setIndex(index, "State File Index");
-  //  client->currentIndex = index;
-  changeIndexRange(index.size());
-  if(current < (int)index.size()){
-    getProbe->setValue(current);
-  }else{
-    getProbe->setValue(0);
-  }
-  // which should be enough.. 
+void ClientWindow::removeCurrentFromIndex(){
+    vector<int> currentIndex = client->curIndex();
+    if(currentIndex.size() < 2)
+	return;
+    uint rpos = (uint)getProbe->value();
+    if(rpos >= currentIndex.size())
+	return;
+    vector<int> newIndex(currentIndex.size() - 1);
+    /// UNSAFE OPERATION COMING UP. Assumes that currentIndex contains ints. If this is not the
+    /// case the below code could cause some obvious problems.
+    memcpy((void*)&newIndex[0], (void*)&currentIndex[0], sizeof(int) * rpos);
+    memcpy((void*)&newIndex[rpos], (void*)&currentIndex[rpos+1], sizeof(int) * (newIndex.size() - rpos));
+    rpos = rpos == newIndex.size() ? (rpos - 1) : rpos;
+    
+    changeIndex(newIndex, "Deleted current", rpos);
+}
+
+void ClientWindow::removeAboveFromIndex(){
+    vector<int> currentIndex = client->curIndex();
+    if(currentIndex.size() < 2)
+	return;
+    uint rpos = (uint)getProbe->value();
+    if(rpos >= currentIndex.size())
+	return;
+    vector<int> newIndex(rpos+1);
+    memcpy((void*)&newIndex[0], (void*)&currentIndex[0], sizeof(int) * (rpos+1));
+    
+    changeIndex(newIndex, "Deleted above", rpos);
+}
+
+void ClientWindow::removeBelowFromIndex(){
+    vector<int> currentIndex = client->curIndex();
+    if(currentIndex.size() < 2)
+	return;
+    uint rpos = (uint)getProbe->value();
+    if(rpos + 1 >= currentIndex.size())
+	return;
+    vector<int> newIndex(currentIndex.size() - rpos);
+    memcpy((void*)&newIndex[0], (void*)&currentIndex[rpos], sizeof(int) * newIndex.size() );
+    
+    changeIndex(newIndex, "Deleted below", 0);
 }
 
 void ClientWindow::clearSavedOnes(){

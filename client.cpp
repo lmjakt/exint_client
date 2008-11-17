@@ -462,6 +462,9 @@ void Client::setIndex(vector<int> ind, QString term){
   }
   emit indexHistoryChanged();            // - only for a specific receiver, perhaps.. 
   //cout << "setIndex : The term is : " << term << endl;
+  // experimental, not sure if I always want to do this, but:
+  //sendClientIndex();
+  
 }
 
 void Client::writeInt(int i){
@@ -1021,14 +1024,14 @@ void Client::sendClientIndex(){
     message << ">";
 //    *t << ">";
 
-    ostringstream test;
-    test << "<setClientIndex>";
-    test << 23 << ":" << 24 << ":" << ">";
-    cout << test.str() << endl;
-    cout << "length of test is " << test.str().length() << endl;
-    const char* test_c = test.str().c_str();
-    cout << "and as a c string we get " << test_c << endl;
-    cout << "and the length of the c_string is " << strlen(test_c) << endl;
+//     ostringstream test;
+//     test << "<setClientIndex>";
+//     test << 23 << ":" << 24 << ":" << ">";
+//     cout << test.str() << endl;
+//     cout << "length of test is " << test.str().length() << endl;
+//     const char* test_c = test.str().c_str();
+//     cout << "and as a c string we get " << test_c << endl;
+//     cout << "and the length of the c_string is " << strlen(test_c) << endl;
 
     string smes = message.str();
     const char* mes = smes.c_str();

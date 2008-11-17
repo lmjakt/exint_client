@@ -29,7 +29,7 @@
 //#include "expressionplotter.h"
 #include "exptinfo.h"    // for the exptInfo struct.. 
 #include "plotWindow.h"
-#include "sampleInfo/sampleInfoWidget.h";
+#include "sampleInfo/sampleInfoWidget.h"
 #include "probe_set/probe_set.h"
 #include "dbQuerier.h"
 #include "dataView.h"
@@ -93,8 +93,8 @@ class ClientWindow : public QWidget
   void setRegionRange(int n);
   void clearSavedOnes();    // clear all of the saved ones.. 
   void getProbeSet(int);
-  void changeIndexRange(int);
-  void changeIndex(vector<int> v, QString descriptor);
+  void changeIndexRange(int, uint indexPos=0);
+  void changeIndex(vector<int> v, QString descriptor, uint indexPos=0);
   void restoreIndex(vector<int> v, int i, QString descriptor);    // sets the position as something other than 0.. 
   // void testing();       // used for updating experimental data,, as the signals slots can't seem to cope
   void changeExperimentInformation();
@@ -118,6 +118,9 @@ class ClientWindow : public QWidget
   void writeHtmlReport();      // and how about that one.. Maybe one day, I can make it real pretty !! 
   void saveCurrentState();     // write the current Index, and saved things to a file.. 
   void readState();            // arghh, now how to do this properly.. hmm.. 
+  void removeAboveFromIndex();
+  void removeBelowFromIndex();
+  void removeCurrentFromIndex(); // remove the current one from the current index.
   vector<int> hashPasswd(QString passwd);           // some sort of simple algorithm to hash the password.. 
 
   void shiftFocus(int id);        // shift the focus depeding on the id give.. 
