@@ -29,6 +29,8 @@
 #include <qwidget.h>
 #include <map>
 
+/// Note this file should probably be removed from the project as it seems not to be compiled.
+
 using namespace std;
 
 class ExptTable : public QWidget

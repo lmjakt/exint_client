@@ -58,6 +58,13 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   connect(orderChooser, SIGNAL(setExptOrder(multimap<float, exptInfo>)), this, SLOT(updateExperimentOrder(multimap<float, exptInfo>)) );
   connect(orderChooser, SIGNAL(changeActivityStates(map<int, bool>)), this, SLOT(setActivityStates(map<int, bool>)) );
 
+  sampleMemory = new SampleMemoryWidget();
+  sampleMemory->setMinimumWidth(300);
+  connect(sampleMemory, SIGNAL(displayThese(std::set<int>, std::set<int>)), this, SLOT(setFromMemory(std::set<int>, std::set<int>)) );
+  // and a button to add stuff to the memory widget
+  QPushButton* rememberButton = new QPushButton("save selection", this, "rememberButton");
+  connect(rememberButton, SIGNAL(clicked()), this, SLOT(rememberSelection()) );
+
   chipGroup = new QButtonGroup();
   connect(chipGroup, SIGNAL(clicked(int)), this, SLOT(excludeIfNoChip(int)) );
 //  chipGroup = new QButtonGroup("Mandatory", this, "chipGroups");
@@ -65,6 +72,7 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   QLabel* chipLabel = new QLabel("By Chip", this, "chipLabel");
   connect(allActiveButton, SIGNAL(clicked()), this, SLOT(setAllActive()) );
   hbox = new QHBoxLayout(base);
+  hbox->addWidget(rememberButton);
   hbox->addWidget(chipLabel);
   hbox->addStretch();
   hbox->addWidget(allActiveButton);
@@ -172,6 +180,31 @@ void ExperimentChooser::setAllActive(){
     }
     selectionChanging(0, false);
 }   
+
+void ExperimentChooser::rememberSelection(){
+    set<int> active;
+    set<int> marks;
+    for(vector<ExperimentWidget*>::iterator it=eWidgets.begin(); it != eWidgets.end(); it++){
+	if((*it)->active)
+	    active.insert((*it)->eInfo.dbaseIndex);
+	if((*it)->markMe)
+	    marks.insert((*it)->eInfo.dbaseIndex);
+    }
+    cout << "rememberSelection active " << active.size() << "  marks " << marks.size() << endl;
+    sampleMemory->rememberStates(active, marks);
+    sampleMemory->show();
+}
+
+void ExperimentChooser::setFromMemory(std::set<int> active, std::set<int> marks){
+      for(vector<ExperimentWidget*>::iterator it=eWidgets.begin(); it != eWidgets.end(); it++){
+	  int dbi = (*it)->eInfo.dbaseIndex;
+	  (*it)->blockSignals(true);
+	  (*it)->includeButtonToggled( active.count(dbi) );
+	  (*it)->markButtonToggled( marks.count(dbi) );
+	  (*it)->blockSignals(false);
+      }
+      selectionChanging(0, false);
+}
 
 void ExperimentChooser::setActivityStates(map<int, bool> states){
   map<int, bool>::iterator bit;

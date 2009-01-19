@@ -28,6 +28,7 @@
 #include "../exptinfo.h"
 #include "../experimentWidget/experimentWidget.h"
 #include "orderChooser/orderWindow.h"
+#include "sampleMemoryWidget.h"
 #include <qwidget.h>
 #include <qlayout.h>
 #include <qframe.h>
@@ -56,6 +57,8 @@ class ExperimentChooser : public QWidget
   void setActivityStates(map<int, bool> states);
   void excludeIfNoChip(int chip);   
   void setAllActive();
+  void rememberSelection();
+  void setFromMemory(std::set<int> active, std::set<int> marks);
 
   signals :
     void newExptSelection(vector<int>);
@@ -67,6 +70,7 @@ class ExperimentChooser : public QWidget
   QVBoxLayout* grid;
   QHBoxLayout* hbox;
   OrderWindow* orderChooser;
+  SampleMemoryWidget* sampleMemory;
   bool updateOrderChooser;
   set<int> chips;
   vector<QPushButton*> excludeButtons;   // this is not going to look pretty, but,,, 

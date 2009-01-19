@@ -36,8 +36,6 @@
 //#include "jpgView/imageViewer.h"
 #include "jpgView/inSituView.h"
 #include "experimentChooser/experimentChooser.h"
- //#include "experimentChooser.h"    remove all references to this
-//#include "exptTable.h"             and this one and do something a bit more in line with the list windows. 
 #include "comparisonWindow/comparisonwindow.h"
 #include "listWindow/listWindow.h"
 #include "probeSetWidget/probeSetWidget.h"

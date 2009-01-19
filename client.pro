@@ -24,6 +24,8 @@ HEADERS		= images.h \
 		meanPlotWindow/keyWindow.h exptinfo.h \
 		experimentWidget/experimentWidget.h \
 		experimentChooser/experimentChooser.h \
+		experimentChooser/sampleMemoryWidget.h \
+		experimentChooser/sampleSelectionWidget.h \
 		experimentChooser/orderChooser/orderWindow.h \
 		experimentChooser/orderChooser/orderWidget.h \
 		bytevec/bytevec.h \
@@ -118,6 +120,8 @@ SOURCES		= client.cpp \
 		exptinfo.cpp \
 		experimentWidget/experimentWidget.cpp \
 		experimentChooser/experimentChooser.cpp \
+		experimentChooser/sampleMemoryWidget.cpp \
+		experimentChooser/sampleSelectionWidget.cpp \
 		experimentChooser/orderChooser/orderWidget.cpp \
 		experimentChooser/orderChooser/orderWindow.cpp \
 		bytevec/bytevec.cpp \
