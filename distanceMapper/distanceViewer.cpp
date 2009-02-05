@@ -237,7 +237,6 @@ void DistanceViewer::updatePoints(){
 
     // and then we may need to make a copy..
     if(!localPoints.size()){
-	cout << "Making New localPoints" << endl;
 	localPoints.resize(pointRefs.size());
 	for(uint i=0; i < localPoints.size(); ++i){
 	    localPoints[i] = pointRefs[i]->copy(true);
@@ -248,8 +247,8 @@ void DistanceViewer::updatePoints(){
 	}
     }
     pointMutex.unlock();   // slows down calculation in favour of drawing.. ?? good or bad, I'm not sure.. 
-    
     drawer->setData(localPoints);
+
     stressPlotter->setData(stressValues);
 }
 

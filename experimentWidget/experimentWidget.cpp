@@ -119,6 +119,7 @@ void ExperimentWidget::setState(bool state){
 }
 
 void ExperimentWidget::markButtonToggled(bool mark){
-  markMe = mark;
-  emit markMyIndex(eInfo.dbaseIndex, mark);
+    markMe = mark;
+    markButton->setActivity(mark);
+    emit markMyIndex(eInfo.dbaseIndex, mark);
 }

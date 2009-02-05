@@ -184,7 +184,7 @@ float dpoint::adjustVectors(dpoint* p, float d, float* dimFactors, bool linear){
                                   // adjust the force vectors by some measure
   stress += fabs(delta);     // the absolute amount of stress on the point.. 
   float* compForces = new float[dimNo];
-  for(int i=0; i < dimNo; i++){
+  for(int i=0; i < dimNo; i++ && D > 0){
     if(fabs(delta) > MINFLOAT){
       forceVectors[i] += (delta * coordDists[i])/D;
       compForces[i] = (delta * coordDists[i])/D;   // Squaring seems to get us out of normal range of values.. bugger.  
@@ -350,10 +350,10 @@ void DistanceMapper::run(){
       
       movePoints();
       resetPoints();
-      cout << "Stress: " << stress << "  totalDistance: " << totalDistance << "  ratio: " << stress / totalDistance << "  dim:";
-      for(int k =0; k < dimensionality; ++k)
-	  cout << "\t" << dimFactors[k];
-      cout << endl;
+//      cout << "Stress: " << stress << "  totalDistance: " << totalDistance << "  ratio: " << stress / totalDistance << "  dim:";
+//      for(int k =0; k < dimensionality; ++k)
+//	  cout << "\t" << dimFactors[k];
+//      cout << endl;
       
       // Squeeze or eliminate dimensions..
       reduceDimensionality(dimReductionType, i);
@@ -444,7 +444,9 @@ void DistanceMapper::reduceDimensionality(DimReductionType drt, int it_no){
 	return;
     }
     // Else we need to reduce the dimNo...
-    currentDimNo = (int)ceilf( (float)(iterationNo - it_no) / ( (float)iterationNo / (float)dimensionality) );
+    currentDimNo = (int)ceil( (float)(iterationNo - it_no) / ( (float)iterationNo / (float)dimensionality) );
+//    currentDimNo = (int)ceilf( (float)(iterationNo - it_no) / ( (float)iterationNo / (float)dimensionality) );
+//    Borland doesn't like ceilf. So We leave it as ceil which should take a double..
     currentDimNo = currentDimNo < 2 ? 2 : currentDimNo;
 
     switch(drt){

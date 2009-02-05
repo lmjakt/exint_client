@@ -26,6 +26,14 @@
 #include <qpainter.h>
 #include <qcolor.h>
 #include <qpixmap.h>
+#include <math.h>
+#ifdef Q_OS_MACX
+#include <limits.h>
+#include <float.h>
+#define MINFLOAT (FLT_MIN)
+#else
+#include <values.h>
+#endif
 #include <iostream>
 
 using namespace std;
@@ -56,13 +64,14 @@ StressPlotter::~StressPlotter(){
 
 void StressPlotter::setData(vector<stressInfo> stress){
     values = stress;
-    maxValue = 0;
+//    maxValue = MINFLOAT;
     if(values.size())
 	minValue = values[0].stress;
     for(uint i= values.size()/10 ; i < values.size(); ++i){
 	maxValue = maxValue > values[i].stress ? maxValue : values[i].stress;
 	minValue = minValue < values[i].stress ? minValue : values[i].stress;
     }
+    maxValue = maxValue > 0 ? maxValue : 1.0;
     update();
 }
 

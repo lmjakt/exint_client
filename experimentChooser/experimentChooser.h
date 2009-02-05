@@ -34,6 +34,7 @@
 #include <qframe.h>
 #include <qbuttongroup.h>
 #include <qpushbutton.h>
+#include <qlineedit.h>
 #include <vector>
 #include <map>
 
@@ -58,6 +59,7 @@ class ExperimentChooser : public QWidget
   void excludeIfNoChip(int chip);   
   void setAllActive();
   void rememberSelection();
+  void readFromFile();
   void setFromMemory(std::set<int> active, std::set<int> marks);
 
   signals :
@@ -71,6 +73,7 @@ class ExperimentChooser : public QWidget
   QHBoxLayout* hbox;
   OrderWindow* orderChooser;
   SampleMemoryWidget* sampleMemory;
+  QLineEdit* sampleSetLabel;
   bool updateOrderChooser;
   set<int> chips;
   vector<QPushButton*> excludeButtons;   // this is not going to look pretty, but,,, 

@@ -59,11 +59,18 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   connect(orderChooser, SIGNAL(changeActivityStates(map<int, bool>)), this, SLOT(setActivityStates(map<int, bool>)) );
 
   sampleMemory = new SampleMemoryWidget();
-  sampleMemory->setMinimumWidth(300);
+  sampleMemory->resize(300, 200);
   connect(sampleMemory, SIGNAL(displayThese(std::set<int>, std::set<int>)), this, SLOT(setFromMemory(std::set<int>, std::set<int>)) );
   // and a button to add stuff to the memory widget
-  QPushButton* rememberButton = new QPushButton("save selection", this, "rememberButton");
+  QPushButton* rememberButton = new QPushButton("Remember", this, "rememberButton");
   connect(rememberButton, SIGNAL(clicked()), this, SLOT(rememberSelection()) );
+  sampleSetLabel = new QLineEdit(this, "sampleSetLabel");
+
+  QPushButton* readFileButton = new QPushButton("From file", this, "readFileButton");
+  connect(readFileButton, SIGNAL(clicked()), this, SLOT(readFromFile()) );
+
+  QPushButton* showMemoryButton = new QPushButton("Memory", this, "showMemoryButton");
+  connect(showMemoryButton, SIGNAL(clicked()), sampleMemory, SLOT(show()) );
 
   chipGroup = new QButtonGroup();
   connect(chipGroup, SIGNAL(clicked(int)), this, SLOT(excludeIfNoChip(int)) );
@@ -72,11 +79,16 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   QLabel* chipLabel = new QLabel("By Chip", this, "chipLabel");
   connect(allActiveButton, SIGNAL(clicked()), this, SLOT(setAllActive()) );
   hbox = new QHBoxLayout(base);
-  hbox->addWidget(rememberButton);
+
   hbox->addWidget(chipLabel);
   hbox->addStretch();
   hbox->addWidget(allActiveButton);
-  //hbox->addWidget(chipGroup);
+
+  QHBoxLayout* sampleMemBox = new QHBoxLayout(base);
+  sampleMemBox->addWidget(showMemoryButton);
+  sampleMemBox->addWidget(readFileButton);
+  sampleMemBox->addWidget(rememberButton);
+  sampleMemBox->addWidget(sampleSetLabel);
 
   // and a button,,
   QPushButton* orderButton = new QPushButton("Set Order", this, "orderButton");
@@ -191,7 +203,17 @@ void ExperimentChooser::rememberSelection(){
 	    marks.insert((*it)->eInfo.dbaseIndex);
     }
     cout << "rememberSelection active " << active.size() << "  marks " << marks.size() << endl;
-    sampleMemory->rememberStates(active, marks);
+    QString labText = sampleSetLabel->text();
+    if(labText.length()){
+	sampleMemory->rememberStates(active, marks, labText);
+    }else{
+	sampleMemory->rememberStates(active, marks);
+    }
+    sampleMemory->show();
+}
+
+void ExperimentChooser::readFromFile(){
+    sampleMemory->readSetFromFile();
     sampleMemory->show();
 }
 
@@ -204,6 +226,7 @@ void ExperimentChooser::setFromMemory(std::set<int> active, std::set<int> marks)
 	  (*it)->blockSignals(false);
       }
       selectionChanging(0, false);
+      markSelectionChanging(0, false);
 }
 
 void ExperimentChooser::setActivityStates(map<int, bool> states){
