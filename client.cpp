@@ -692,6 +692,16 @@ void Client::doGenLookup(QString request){
   socket->flush();
 }
 
+void Client::expandIndexByGenes(){
+    if(open){
+	sendClientIndex();
+	*t << "<expandIndexByGeneId>>";
+	socket->flush();
+    }else{
+	emit statusMessage("Connection closed before expandIndexByGenes");
+    }
+}
+
 void Client::getProbeSet(int n){
   if((uint)n >= currentIndex.size() || n < 0){
     cerr << "get Probe Set, n is larger than current Index : " << endl;
@@ -1006,63 +1016,47 @@ void Client::doRawComparison(vector<float> values, vector<int> eIndex, bool dist
 
 void Client::sendClientIndex(){
     //int flushInterval = 250;
-  cout << "sendClientIndex" << endl;
-  // since we seem to have a problem on Kataoka-san's Intel iMac (at least in emulated) mode
-  // with synching of the stream, let's write to a an ostring stream first
-  ostringstream message;
-  if(open){
-      message << "<setClientIndex>";
-      //     *t << "<setClientIndex>";
-    for(uint i=0; i < currentIndex.size(); i++){
-//	cout << i << endl;
-	message << currentIndex[i] << ":";
-//	*t << currentIndex[i] << ":";
-//	if(i % flushInterval == 0){
-//	    flush(*t);
-//	}
-    }
-    message << ">";
-//    *t << ">";
-
-//     ostringstream test;
-//     test << "<setClientIndex>";
-//     test << 23 << ":" << 24 << ":" << ">";
-//     cout << test.str() << endl;
-//     cout << "length of test is " << test.str().length() << endl;
-//     const char* test_c = test.str().c_str();
-//     cout << "and as a c string we get " << test_c << endl;
-//     cout << "and the length of the c_string is " << strlen(test_c) << endl;
-
-    string smes = message.str();
-    const char* mes = smes.c_str();
-    uint bleft = smes.length();
-    uint bwritten = 0;
-    while(bleft > 0){
-	long b = socket->writeBlock(mes + bwritten, bleft);
-	if(b < 0){
-	    cerr << "An error occured trying to write to the socket.. " << endl;
-	    break;
+    cout << "sendClientIndex" << endl;
+    // since we seem to have a problem on Kataoka-san's Intel iMac (at least in emulated) mode
+    // with synching of the stream, let's write to a an ostring stream first
+    ostringstream message;
+    if(open){
+	message << "<setClientIndex>";
+	for(uint i=0; i < currentIndex.size(); i++){
+	    message << currentIndex[i] << ":";
 	}
-	bwritten += (uint)b;
-	bleft -= (uint)b;
-    }
-    socket->flush();
-//    *t << message.str().c_str();
-    cout << "currentIndex.size is " << currentIndex.size() << endl;
-    cout << "calling flush on the socket " << endl;
-    flush(*t);
+	message << ">";
+	
+	string smes = message.str();
+	const char* mes = smes.c_str();
+	uint bleft = smes.length();
+	uint bwritten = 0;
+	while(bleft > 0){
+	    long b = socket->writeBlock(mes + bwritten, bleft);
+	    if(b < 0){
+		cerr << "An error occured trying to write to the socket.. " << endl;
+		break;
+	    }
+	    bwritten += (uint)b;
+	    bleft -= (uint)b;
+	}
+	socket->flush();
+	
+	cout << "currentIndex.size is " << currentIndex.size() << endl;
+	cout << "calling flush on the socket " << endl;
+	flush(*t);
 //    socket->flush();
-    cout << "returned from flushing the socket " << endl;
-  }else{
-    emit statusMessage("connection lost");
-  }
-  if(recordCommands){
-    *commandRecord << "<setClientIndex>";
-    for(uint i=0; i < currentIndex.size(); i++){
-      *commandRecord << currentIndex[i] << ":";
+	cout << "returned from flushing the socket " << endl;
+    }else{
+	emit statusMessage("connection lost");
     }
-    *commandRecord << ">" << endl;
-  }
+    if(recordCommands){
+	*commandRecord << "<setClientIndex>";
+	for(uint i=0; i < currentIndex.size(); i++){
+	    *commandRecord << currentIndex[i] << ":";
+	}
+	*commandRecord << ">" << endl;
+    }
 }
 
 void Client::setClientChips(vector<int> v){
@@ -1171,35 +1165,27 @@ void Client::doSelectAnovaSort(){
     // int flushInterval = 250;
   if(open){
       sendClientIndex();
-
-//     *t << "<setClientIndex>";
-//     for(int i=0; i < currentIndex.size(); i++){
-//       *t << currentIndex[i] << ":";
-//       if(i % flushInterval == 0){
-// 	socket->flush();
-//       }
-//     }
-    *t << "<doAnovaSelectSort>";
-    for(uint i=0; i < selectedExperiments.size(); i++){
-      *t << selectedExperiments[i] << ":";
-    }
-    *t << ">";
-    socket->flush();
+      *t << "<doAnovaSelectSort>";
+      for(uint i=0; i < selectedExperiments.size(); i++){
+	  *t << selectedExperiments[i] << ":";
+      }
+      *t << ">";
+      socket->flush();
   }else{
-    emit statusMessage("connection lost");
+      emit statusMessage("connection lost");
   }
   if(recordCommands){
-    *commandRecord << "<doAnovaSelectSort>";
-    for(uint i=0; i < selectedExperiments.size(); i++){
-      *commandRecord << selectedExperiments[i] << ":";
-    }
-    *commandRecord << ">" << endl;
+      *commandRecord << "<doAnovaSelectSort>";
+      for(uint i=0; i < selectedExperiments.size(); i++){
+	  *commandRecord << selectedExperiments[i] << ":";
+      }
+      *commandRecord << ">" << endl;
   } 
 }
 
 void Client::getDevsFromMean(){
-  if(open){
-    sendClientIndex();  // just in case we changed it..
+    if(open){
+	sendClientIndex();  // just in case we changed it..
     *t << "<DevsFromMean>";
     //cout << "selectedExperiments size is : " << selectedExperiments.size() << endl;
     for(uint i=0; i < selectedExperiments.size(); i++){

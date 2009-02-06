@@ -434,6 +434,7 @@ class Client : public QObject
     void sendMessage(QString);         // format everything in the clientWindow??
   void doDBLookup(QString);
   void doGenLookup(QString);          // for finding genomic regions using things.. 
+  void expandIndexByGenes();
   void getProbeSet(int);
   void getRegion(int);
   void doAnovaSort();                 // sort the current index by anova.. 

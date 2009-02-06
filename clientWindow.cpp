@@ -236,6 +236,9 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   connect(client, SIGNAL(newDBChoices(vector<string>)), dbQuerier, SLOT(setChoices(vector<string>)) );
   connect(client, SIGNAL(newRegionChoices(vector<string>)), dbQuerier, SLOT(setRegionChoices(vector<string>)) );
 
+  QPushButton* expandByGeneButton = new QPushButton("Expand by Gene", this);
+  connect(expandByGeneButton, SIGNAL(clicked()), client, SLOT(expandIndexByGenes()) );
+
   dataView = new DataView(client);     // top level widget..
   connect(client, SIGNAL(newPData(probe_data*)), this, SLOT(newProbeData(probe_data*)) );
   //  connect(client, SIGNAL(newPData(probe_data*)), dataView, SLOT(setText(probe_data*)) );
@@ -623,12 +626,19 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   rmButtons->addWidget(rmButton);
   rmButtons->addWidget(rmAboveButton);
 
+  QHBoxLayout* expandArea = new QHBoxLayout();
+  vbox->addLayout(expandArea);
+  expandArea->addStretch();
+  expandArea->addWidget(expandByGeneButton);
+
   vbox->addLayout(spinners);
   
   spinners->addWidget(lineWidth);
   spinners->addWidget(getRegion);
   spinners->addWidget(getProbe);
   vbox->addWidget(dbQuerier);
+
+
   vbox->addWidget(chipChooser);
 
 //    vbox->addWidget(reConnect);
