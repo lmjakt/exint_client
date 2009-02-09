@@ -45,7 +45,7 @@ class PlotWindow : public QWidget
 {
   Q_OBJECT
     public:
-  PlotWindow(vector<int>* es, vector<int>* me, QWidget* parent=0, const char* name=0);
+  PlotWindow(vector<int>* es, vector<int>* me, int id, QWidget* parent=0, const char* name=0);
   
   public slots:
   void plot(probe_set* pset);   // pass as pointer rather than reference so I don't forget!
@@ -54,6 +54,7 @@ class PlotWindow : public QWidget
   void setPenWidth(int);     // just for passing the message on.. 
   void replot();
   void setCoordinates(vector<PointCoordinate> pts);
+  void setActiveWindow(bool b);
 
   private slots :
     void toggleSurfacePlot();
@@ -61,9 +62,11 @@ class PlotWindow : public QWidget
   void setFonts(QFont f);
   void showExportDialog(ExpressionPlotter::PlotType type);
   void exportPS(QString fname, ExpressionPlotter::PlotType type, int, int);
+  void clonePlot();  
 
  private:
   bool hasData;
+  int plotId;
   ExpressionPlotter* raw;
 //  ExpressionPlotter* norm;
   ExpressionPlotter* model;     // well sort of my model based one.. 
@@ -80,6 +83,7 @@ class PlotWindow : public QWidget
   signals :
       void showExperimentDetails(int);
   void toggleSampleInfoWidget();
+  void clonePlot(int);  // the id of this plot window.. 
   //ExportWidget* exportDetails;  // this actually will be stuck into the exportDialog.. hmm. 
   //QSlider* xPos;
   //QSlider* yPos;

@@ -90,6 +90,15 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   sampleMemBox->addWidget(rememberButton);
   sampleMemBox->addWidget(sampleSetLabel);
 
+  plotWindows = new QButtonGroup();  // an invisible QButton Group
+  connect(plotWindows, SIGNAL(clicked(int)), this, SIGNAL(changedActivePlotWindow(int)) );
+  QLabel* plotWindowLabel = new QLabel("Active PlotWindow", this);
+
+  plotWindowButtons = new QGridLayout(1, 2);
+  plotWindowButtons->setColStretch(0, 2);
+  base->addLayout(plotWindowButtons);
+  plotWindowButtons->addWidget(plotWindowLabel, 0, 0);
+
   // and a button,,
   QPushButton* orderButton = new QPushButton("Set Order", this, "orderButton");
   connect(orderButton, SIGNAL(clicked()), orderChooser, SLOT(show()) );
@@ -142,7 +151,7 @@ void ExperimentChooser::updateExperiments(multimap<float, exptInfo> info){
     // do some connects later on..
   }
   // Emit the index, and hope that it connects to the vector in client.. 
-  emit newExptSelection(tempSelection);    // later -- reconstruct and emit this each time it changes.. 
+  emit newExptSelection(tempSelection, plotWindows->id(plotWindows->selected())); // newer versions of Qt can use the selectedId() function);    // later -- reconstruct and emit this each time it changes.. 
   QSize fSize = frame->sizeHint();
   cout << "frame height: " << fSize.height() << endl 
        << "frame width : " << fSize.width() << endl;
@@ -251,7 +260,7 @@ void ExperimentChooser::selectionChanging(int n, bool b){  // should be able to 
     }
   }
   cout << endl << "size of newExptSelection  " << selection.size() << " " << n << "  " << b << endl;
-  emit newExptSelection(selection);     // hmm, probably OK for now. I shouldn't have had that bun thing, has stopped my brain from functioning
+  emit newExptSelection(selection, plotWindows->id(plotWindows->selected())); // newer versions of Qt can use the selectedId() function);     // hmm, probably OK for now. I shouldn't have had that bun thing, has stopped my brain from functioning
 }
 
 void ExperimentChooser::markSelectionChanging(int, bool){
@@ -261,5 +270,16 @@ void ExperimentChooser::markSelectionChanging(int, bool){
       selection.push_back(eWidgets[i]->eInfo.dbaseIndex);
     }
   }
-  emit newMarkSelection(selection);    
+  emit newMarkSelection(selection, plotWindows->id(plotWindows->selected())); // newer versions of Qt can use the selectedId() function);    
 }
+
+void ExperimentChooser::madeNewPlotWindow(int id){
+    QString labString;
+    labString.setNum(id);
+    QRadioButton* button = new QRadioButton(labString, this);
+    plotWindows->insert(button, id);
+    plotWindowButtons->addWidget( button, plotWindows->count() - 1, 1);
+    button->show();
+    button->setChecked(true);
+}
+

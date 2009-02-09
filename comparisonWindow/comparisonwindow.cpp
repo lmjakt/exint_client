@@ -128,6 +128,6 @@ void ComparisonWindow::setActive(map<int, bool> cmap){   // chooses experiments 
   inputWindow->setActive(cmap);
 }
 
-void ComparisonWindow::setActive(vector<int> samples){
+void ComparisonWindow::setActive(vector<int> samples, int id){
     inputWindow->setActive(samples);
 }

@@ -52,6 +52,8 @@ ExpressionPlotter::ExpressionPlotter(PlotType pt, QWidget *parent, const char* n
   setColours();
   penWidth = 2;
   hasData = false;
+  upToDate = false;
+  activeWindow = true;
   cout << "at the end of Expression Plotter constructor" << endl;
   // let's have a menu for doing things...
   threshold = 1.0;
@@ -66,6 +68,7 @@ ExpressionPlotter::ExpressionPlotter(PlotType pt, QWidget *parent, const char* n
   menu->insertItem("Set Font", this, SLOT(selectFont()) );
   menu->insertItem("Export Postscript", this, SLOT(exportPS()) );
   menu->insertItem("Toggle Surface Plot", this, SIGNAL(toggleSurfacePlot()) );
+  menu->insertItem("Clone Plot Window", this, SIGNAL(clonePlot()) );
 }
 
 void ExpressionPlotter::paintEvent(QPaintEvent *e){
@@ -86,7 +89,18 @@ void ExpressionPlotter::paintLines(vector< vector<float> >& v, vector<int>& exIn
   cout << "min max set " << endl;
   devsFromMean = devs;
   hasData = true;
+  upToDate = true;
   paintLines();
+}
+
+void ExpressionPlotter::setUpToDate(bool b){
+    upToDate = b;
+    paintLines();
+}
+
+void ExpressionPlotter::setActiveSelection(bool b){
+    activeWindow = b;
+    paintLines();
 }
 
 void ExpressionPlotter::paintLines(){
@@ -111,7 +125,11 @@ void ExpressionPlotter::paintLines(){
       cerr << "pixmap is null can't paint, try again" << endl;
       return;
   }
-  pixmap->fill(QColor(250, 250, 200));
+  if(upToDate){
+      pixmap->fill(QColor(250, 250, 200));
+  }else{
+      pixmap->fill(QColor(200, 200, 200));
+  }
   //pixmap->fill(this, QPoint(0, 0));
   QPainter* p = new QPainter(pixmap);
   cout << "calling paintLines .. " << endl;
@@ -147,6 +165,13 @@ void ExpressionPlotter::paintLines(QPainter* p, int w, int h){
   if(exptIndex.size() != values[0].size()){
     emit plotterStatusMessage(QString("exptIndex size is different from values[0] size. Can't really draw!!"));
     return;
+  }
+
+
+  if(activeWindow){
+      p->setBrush(Qt::NoBrush);
+      p->setPen(QPen(QColor(255, 0, 0), 3));
+      p->drawRect(0, 0, width(), height());
   }
 
   // draw some vertical lines.. and some labels..

@@ -52,6 +52,8 @@ class ExperimentChooser : public QWidget
   void updateExperiments(map<float, exptInfo> info);   // a wrapper that turns the map into a multimap.. 
   void selectionChanging(int, bool);
   void markSelectionChanging(int, bool);
+  void madeNewPlotWindow(int id);         // create a new button for the button group.. (by default made as a copy of the thingy).
+  void setFromMemory(std::set<int> active, std::set<int> marks);
 
   private slots :
     void updateExperimentOrder(multimap<float, exptInfo> em);
@@ -60,11 +62,11 @@ class ExperimentChooser : public QWidget
   void setAllActive();
   void rememberSelection();
   void readFromFile();
-  void setFromMemory(std::set<int> active, std::set<int> marks);
 
   signals :
-    void newExptSelection(vector<int>);
-  void newMarkSelection(vector<int>);
+    void newExptSelection(vector<int>, int);
+  void newMarkSelection(vector<int>, int);  // these refer to the identity of the given selection.
+  void changedActivePlotWindow(int);        // the int of the new active plot window.
 
  private:
   vector<ExperimentWidget*> eWidgets;     // so I can manually delete at update things
@@ -78,6 +80,8 @@ class ExperimentChooser : public QWidget
   set<int> chips;
   vector<QPushButton*> excludeButtons;   // this is not going to look pretty, but,,, 
   QButtonGroup* chipGroup;           // ahh, that's a bit ugly.. 
+  QButtonGroup* plotWindows;         // set the active plotWindow
+  QGridLayout* plotWindowButtons;     // a qridlayout for the plot windows (2 columns).
 };
 
 #endif                    // later add on signals and stuff so I can create things.. 

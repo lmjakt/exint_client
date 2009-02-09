@@ -69,6 +69,21 @@ struct writeRequest{
   ~writeRequest();
 };
 
+struct PlotSet {
+    vector<int> experiments;
+    vector<int> markedExperiments;
+    int id;
+    PlotWindow* plotWindow;
+    PlotSet(vector<int> exp, vector<int> me, int i){
+	experiments = exp;
+	markedExperiments = me;
+	id = i;
+	plotWindow = new PlotWindow(&experiments, &markedExperiments, id); // Bad, I know. Should clean up
+    }
+    ~PlotSet(){
+	delete plotWindow;
+    }
+};
 
 class ClientWindow : public QWidget
 {
@@ -96,8 +111,11 @@ class ClientWindow : public QWidget
   void restoreIndex(vector<int> v, int i, QString descriptor);    // sets the position as something other than 0.. 
   // void testing();       // used for updating experimental data,, as the signals slots can't seem to cope
   void changeExperimentInformation();
-  void newExptSelection(vector<int>);
-  void newMarkSelection(vector<int>);
+  PlotSet* makePlotSet(vector<int>& sel, vector<int>& marks); 
+  void clonePlot(int plotId);
+  void changeActivePlotWindow(int plotId);
+  void newExptSelection(vector<int> v, int id);
+  void newMarkSelection(vector<int> v, int id);
   void doEuclidSort();
   void changePassword(QString oldp, QString newp);
   void createNewUser(QString oldp, QString newp, QString uName);   // should really have more information, like laboratory, and so one. but never mind. 
@@ -127,6 +145,7 @@ class ClientWindow : public QWidget
   void exportMeans();                            // request the server to export the means for the currently selected set of experiments and indices.. 
 
   void selectFont();                             // select a font for the application.. 
+  void setPenWidth(int w); 
 
   //// mapping experimental distances to a n-d surface..
   void newExptDistances(exptDistanceInfo data);
@@ -146,7 +165,10 @@ class ClientWindow : public QWidget
 
   private:
   QTextView* messages;
-  PlotWindow* plotWindow;
+  //////// Replace plotWindow with a set of plot windows..
+  map<int, PlotSet*> plotWindows;   // use a pointer to allow me to delete things properly when needed..
+  int plotSetCounter;               // something we increase everytime we make anew PlotSet.. 
+//  PlotWindow* plotWindow;
   MeanPlotWindow* meanPlotWindow;
   SampleInfoWidget* sampleInfoWidget;
   //QLineEdit* indexSize; 

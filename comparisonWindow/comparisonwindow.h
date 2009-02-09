@@ -64,7 +64,7 @@ class ComparisonWindow: public QWidget
   void rawComparison();                // collects the data from the canvas and emits a rawComparison(vecttor<float>, vector<int>) signal.. 
   void meanComparison();
   void setActive(map<int, bool> cmap);  // set the active maps.. 
-  void setActive(vector<int> samples);  // set the active samples.. 
+  void setActive(vector<int> samples, int id);  // set the active samples.. 
 
  signals:
   //void doDiff(int, int, bool);

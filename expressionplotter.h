@@ -49,6 +49,8 @@ class ExpressionPlotter: public QWidget
   void paintLines(vector< vector<float> >& v, vector<int>& exIndex, vector<int>& marks, vector<float>& devs);
   void paintLines(QPainter* p, int w, int h);   // paint current data using an external painter.. // no standard for size, but we can do later. 
   void paintLines(QPainter* p, vector< vector<float> >& v, vector<int>& exIndex);   // paint data using an external painter.. // 
+  void setUpToDate(bool b);
+  void setActiveSelection(bool b);
  
 
  
@@ -66,6 +68,8 @@ class ExpressionPlotter: public QWidget
   int yo;
   int rxo;
   bool hasData;                            // if it has data or not..
+  bool upToDate;
+  bool activeWindow;                       // the window with the currently active sample Selection
   QPixmap* pixmap;
   QPopupMenu* menu;
   PlotType plotType;
@@ -92,6 +96,7 @@ class ExpressionPlotter: public QWidget
   void exportEPS(ExpressionPlotter::PlotType);    // request the plotwindow to export eps either PlotType or 
   void showExperimentDetails(int);  // show some details for the current experiemnt.. 
   void toggleSampleInfoWidget();
+  void clonePlot();
 
   public slots:
     void setPenWidth(int);

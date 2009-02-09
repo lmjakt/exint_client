@@ -1,7 +1,7 @@
 TEMPLATE	= app
 TARGET          = client_2.12
 CONFIG		+= qt opengl release  thread
-CONFIG		+= console 
+CONFIG		-= console 
 HEADERS		= images.h \
 		client.h clientWindow.h \
 		probe_set/probe_set.h \

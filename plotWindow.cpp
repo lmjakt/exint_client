@@ -39,43 +39,47 @@
 
 using namespace std;
 
-PlotWindow::PlotWindow(vector<int>* es, vector<int>* me, QWidget* parent, const char* name) :
+PlotWindow::PlotWindow(vector<int>* es, vector<int>* me, int id, QWidget* parent, const char* name) :
   QWidget(parent, name)
 {
-  setCaption("Raw Data");
-  hasData = false;
-  exptSelection = es;        // vector in client,, long way away, be careful, !!!.. 
-  markedExperiments = me;
-  probePairThreshold = 1;      // default.. 
-  QSplitter* split = new QSplitter(this, "split");
-  raw = new ExpressionPlotter(ExpressionPlotter::RAW, split, "raw");
-  raw->setProbePairThreshold(probePairThreshold);
-  cout << "made raw : " << endl;
-  //norm = new ExpressionPlotter(split, "norm");
-  //norm->setProbePairThreshold(probePairThreshold);
-  cout << "made norm : " << endl;
-  model = new ExpressionPlotter(ExpressionPlotter::MODEL, split, "model");
-  model->setProbePairThreshold(probePairThreshold);
-  cout << "made model : " << endl;
-  //glRaw = new GLPlotter(split, "glPlotter");
-  //cout << "made glplottter " << endl;
-  
-  connect(raw, SIGNAL(toggleSurfacePlot()), this, SLOT(toggleSurfacePlot()) );
-  //connect(norm, SIGNAL(toggleSurfacePlot()), this, SLOT(toggleSurfacePlot()) );
-  connect(model, SIGNAL(toggleSurfacePlot()), this, SLOT(toggleSurfacePlot()) );
+    plotId = id;
+    setCaption("Raw Data");
+    hasData = false;
+    exptSelection = es;        // vector in client,, long way away, be careful, !!!.. 
+    markedExperiments = me;
+    probePairThreshold = 1;      // default.. 
+    QSplitter* split = new QSplitter(this, "split");
+    raw = new ExpressionPlotter(ExpressionPlotter::RAW, split, "raw");
+    raw->setProbePairThreshold(probePairThreshold);
+    cout << "made raw : " << endl;
+    //norm = new ExpressionPlotter(split, "norm");
+    //norm->setProbePairThreshold(probePairThreshold);
+    cout << "made norm : " << endl;
+    model = new ExpressionPlotter(ExpressionPlotter::MODEL, split, "model");
+    model->setProbePairThreshold(probePairThreshold);
+    cout << "made model : " << endl;
+    //glRaw = new GLPlotter(split, "glPlotter");
+    //cout << "made glplottter " << endl;
+    
+    connect(raw, SIGNAL(toggleSurfacePlot()), this, SLOT(toggleSurfacePlot()) );
+    //connect(norm, SIGNAL(toggleSurfacePlot()), this, SLOT(toggleSurfacePlot()) );
+    connect(model, SIGNAL(toggleSurfacePlot()), this, SLOT(toggleSurfacePlot()) );
+    
+    connect(raw, SIGNAL(selectedNewFont(QFont)), this, SLOT(setFonts(QFont)) );
+    connect(model, SIGNAL(selectedNewFont(QFont)), this, SLOT(setFonts(QFont)) );
+    
+    connect(raw, SIGNAL(exportEPS(ExpressionPlotter::PlotType)), this, SLOT(showExportDialog(ExpressionPlotter::PlotType)) );
+    connect(model, SIGNAL(exportEPS(ExpressionPlotter::PlotType)), this, SLOT(showExportDialog(ExpressionPlotter::PlotType)) );
+    
+    connect(raw, SIGNAL(showExperimentDetails(int)), this, SIGNAL(showExperimentDetails(int)) );
+    connect(model, SIGNAL(showExperimentDetails(int)), this, SIGNAL(showExperimentDetails(int)) );
+    
+    connect(raw, SIGNAL(toggleSampleInfoWidget()), this, SIGNAL(toggleSampleInfoWidget()) );
+    connect(model, SIGNAL(toggleSampleInfoWidget()), this, SIGNAL(toggleSampleInfoWidget()) );
 
-  connect(raw, SIGNAL(selectedNewFont(QFont)), this, SLOT(setFonts(QFont)) );
-  connect(model, SIGNAL(selectedNewFont(QFont)), this, SLOT(setFonts(QFont)) );
-
-  connect(raw, SIGNAL(exportEPS(ExpressionPlotter::PlotType)), this, SLOT(showExportDialog(ExpressionPlotter::PlotType)) );
-  connect(model, SIGNAL(exportEPS(ExpressionPlotter::PlotType)), this, SLOT(showExportDialog(ExpressionPlotter::PlotType)) );
-
-  connect(raw, SIGNAL(showExperimentDetails(int)), this, SIGNAL(showExperimentDetails(int)) );
-  connect(model, SIGNAL(showExperimentDetails(int)), this, SIGNAL(showExperimentDetails(int)) );
-
-  connect(raw, SIGNAL(toggleSampleInfoWidget()), this, SIGNAL(toggleSampleInfoWidget()) );
-  connect(model, SIGNAL(toggleSampleInfoWidget()), this, SIGNAL(toggleSampleInfoWidget()) );
-
+    connect(raw, SIGNAL(clonePlot()), this, SLOT(clonePlot()) );
+    connect(model, SIGNAL(clonePlot()), this, SLOT(clonePlot()) );
+    
   posPlot = new TwoDPlot();      // make a top level window.
   //  posPlot->show();               // later make this an option in the menu.. 
   pointPlotter = new PointPlotter();
@@ -120,6 +124,11 @@ void PlotWindow::plot(probe_set* pset){
   //cout << "PlotWindow,, plot(probe_set* pset function p.exptIndex " << p.exptIndex.size() << endl; 
   hasData = true;
   plot();
+}
+
+void PlotWindow::setActiveWindow(bool b){
+    model->setActiveSelection(b);
+    raw->setActiveSelection(b);
 }
 
 void PlotWindow::plot(probe_set* pset, QPainter* p, bool rawData){
@@ -179,7 +188,9 @@ void PlotWindow::plot(){
   }
   // check size of experiments..
   if(experiments.size() < 2){
-    return;
+      raw->setUpToDate(false);
+      model->setUpToDate(false);
+      return;
   }
 
   //cout << "\tplot() function size of experiments: " << experiments.size() << endl;
@@ -296,4 +307,8 @@ void PlotWindow::exportPS(QString fname, ExpressionPlotter::PlotType type, int w
     }
     p.end();
     // we might need to end the plotter or something .. but I'm not sure.. 
+}
+
+void PlotWindow::clonePlot(){
+    emit clonePlot(plotId);
 }

@@ -176,11 +176,16 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   messages = new QTextView();
   //  messages->setMaximumHeight(45);
 
-  plotWindow = new PlotWindow(&client->selectedExperiments, &markedExperiments);    // topLevel window. 
-  connect(plotWindow, SIGNAL(showExperimentDetails(int)), this, SLOT(showExperimentDetails(int)) );
-  connect(plotWindow, SIGNAL(toggleSampleInfoWidget()), this, SLOT(toggleSampleInfoWidget()) );
+  ///////// Probably need to move this around to somewhere.. not sure where exactly..
+  // Don't make any plotWindow here. Rather make a counter for the plot windows.
+  plotSetCounter = 0;
+
+//  PlotWindow* plotWindow = new PlotWindow(&client->selectedExperiments, &markedExperiments);    // topLevel window. 
+//  connect(plotWindow, SIGNAL(showExperimentDetails(int)), this, SLOT(showExperimentDetails(int)) );
+//  connect(plotWindow, SIGNAL(toggleSampleInfoWidget()), this, SLOT(toggleSampleInfoWidget()) );
+  
   //  cout << "Plot Window created " << endl;
-  plotWindow->resize(600, 300);
+  //plotWindow->resize(600, 300);
   //cout << "Resized plot window : " << endl;
   //plotWindow->show();
   //cout << "calling show on plot window : " << endl;
@@ -194,8 +199,10 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
 
   lineWidth = new LSpinBox(0, 10, 1, this, "Line Width");
   //  lineWidth = new QSpinBox(0, 10, 1, this);
-  connect(lineWidth, SIGNAL(valueChanged(int)), plotWindow, SLOT(setPenWidth(int)) );
-  connect(lineWidth, SIGNAL(valueChanged(int)), meanPlotWindow, SLOT(setPenWidth(int)) );
+
+  connect(lineWidth, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth(int)) );
+//  connect(lineWidth, SIGNAL(valueChanged(int)), plotWindow, SLOT(setPenWidth(int)) );
+//  connect(lineWidth, SIGNAL(valueChanged(int)), meanPlotWindow, SLOT(setPenWidth(int)) );
   lineWidth->setValue(5);
 
   getProbe = new LSpinBox(0, 10000, 1, this, "Probe");
@@ -264,8 +271,9 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
   markedExperiments.resize(0);  // shouldn't have anything.. at the moment. this is probably unnecessary.. 
 
   connect(client, SIGNAL(exptInfoChanged()), this, SLOT(changeExperimentInformation()) );
-  connect(experimentChooser, SIGNAL(newExptSelection(vector<int>)), this, SLOT(newExptSelection(vector<int>)) );
-  connect(experimentChooser, SIGNAL(newMarkSelection(vector<int>)), this, SLOT(newMarkSelection(vector<int>)) );
+  connect(experimentChooser, SIGNAL(newExptSelection(vector<int>, int)), this, SLOT(newExptSelection(vector<int>, int)) );
+  connect(experimentChooser, SIGNAL(newMarkSelection(vector<int>, int)), this, SLOT(newMarkSelection(vector<int>, int)) );
+  connect(experimentChooser, SIGNAL(changedActivePlotWindow(int)), this, SLOT(changeActivePlotWindow(int)) );
 
   // and something for changing the password with..
   passwordWindow = new PasswdChange();     // floating window..
@@ -814,15 +822,63 @@ void ClientWindow::changeExperimentInformation(){
   delete comparisonWindow;
   comparisonWindow = new ComparisonWindow(&client->expInfo);
   connect(client->chipData, SIGNAL(equivalentStates(map<int, bool>)), comparisonWindow, SLOT(setActive(map<int, bool>)) );
-  connect(experimentChooser, SIGNAL(newExptSelection(vector<int>)), comparisonWindow, SLOT(setActive(vector<int>)) );
+  connect(experimentChooser, SIGNAL(newExptSelection(vector<int>, int)), comparisonWindow, SLOT(setActive(vector<int>, int)) );
 
   //  comparisonWindow = new ComparisonWindow(client->expInfo.size());
   comparisonWindow->setPalette(palette());
   connect(comparisonWindow, SIGNAL(doRawComparison(vector<float>, vector<int>, bool)), client, SLOT(doRawComparison(vector<float>, vector<int>, bool)) );
   //  connect(comparisonWindow, SIGNAL(doDiff(int, int, bool)), client, SLOT(doBinaryComparison(int, int, bool)) );
   connect(comparisonWindow, SIGNAL(doMeanComparison(vector<float>, vector<int>, bool, bool)), client, SLOT(doMeanComparison(vector<float>, vector<int>, bool, bool)) );
+
+  // and make a plot set. 
+//  plotWindows.insert(make_pair(plotSetCounter, makePlotSet(client->selectedExperiments, markedExperiments)) );
+  makePlotSet(client->selectedExperiments, markedExperiments);
+  // which also should tell the experimentChooser about the new plotWindow. (maybe can do from makePlotSet, hmm).
+  
 }
 
+PlotSet* ClientWindow::makePlotSet(vector<int>& sel, vector<int>& marks){
+    PlotSet* ps = new PlotSet(sel, marks, plotSetCounter);
+    connect(ps->plotWindow, SIGNAL(showExperimentDetails(int)), this, SLOT(showExperimentDetails(int)) );
+    connect(ps->plotWindow, SIGNAL(toggleSampleInfoWidget()), this, SLOT(toggleSampleInfoWidget()) );
+    connect(ps->plotWindow, SIGNAL(clonePlot(int)), this, SLOT(clonePlot(int)) );
+    ps->plotWindow->resize(600, 300);
+    ps->plotWindow->setPenWidth(lineWidth->value());
+    experimentChooser->madeNewPlotWindow(plotSetCounter);
+    plotWindows.insert(make_pair(plotSetCounter, ps) );
+    // set the id of the plotwindow
+    QString caption;
+    QTextOStream(&caption) << "Raw Data : " << plotSetCounter;
+    ps->plotWindow->setCaption(caption);
+    plotSetCounter++;
+    return(ps);
+}
+
+void ClientWindow::clonePlot(int plotId){
+    if(plotWindows.count(plotId)){
+	PlotSet* ps = makePlotSet(plotWindows[plotId]->experiments, plotWindows[plotId]->markedExperiments);
+	ps->plotWindow->plot(&client->pSet);  // as long as we are in the same thread, this should be ok. but not ideal
+	ps->plotWindow->show();
+	changeActivePlotWindow(ps->id);
+    }
+}
+
+void ClientWindow::changeActivePlotWindow(int plotId){
+    if(plotWindows.count(plotId)){
+	// this will trigger the signal newExptSelection from experimentChooser which should take care of everything..
+	set<int> samples;
+	set<int> marks;
+	samples.insert(plotWindows[plotId]->experiments.begin(), plotWindows[plotId]->experiments.end());
+	marks.insert(plotWindows[plotId]->markedExperiments.begin(), plotWindows[plotId]->markedExperiments.end());
+	experimentChooser->setFromMemory(samples, marks);
+	plotWindows[plotId]->plotWindow->setActiveWindow(true);
+    }    
+    // all the others need to be inactive windows..
+    for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it){
+	if(it->first != plotId)
+	    it->second->plotWindow->setActiveWindow(false);
+    }
+}
 
 void ClientWindow::writeMessage(QString message){
   cout << "ClientWindow::writeMessage" << endl;
@@ -860,7 +916,8 @@ void ClientWindow::plotValues(probe_set pSet){
       }
     }
   }
-  plotWindow->plot(&pSet);
+  for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it)
+      it->second->plotWindow->plot(&pSet);
 }
 
 void ClientWindow::newProbeData(probe_data* pd){
@@ -881,9 +938,10 @@ void ClientWindow::newProbeData(probe_data* pd){
 }
 
 void ClientWindow::newSet(probe_set* p, probe_data* d){
-  plotWindow->plot(p);
-  dataView->setText(d);
-  currentProbeSetId = p->index;
+    for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it)
+	it->second->plotWindow->plot(p);
+    dataView->setText(d);
+    currentProbeSetId = p->index;
 }
 
 void ClientWindow::newAnnotation(int state, int sessionIndex, QString note){
@@ -955,12 +1013,14 @@ void ClientWindow::toggleDataWindow(bool vis){
 }
 
 void ClientWindow::toggleExpressionWindow(bool vis){
-  cout << "ClientWindow::toggleExpressionWindow" << endl;
-  if(vis){
-    plotWindow->show();
-    return;
-  }
-  plotWindow->hide();
+    cout << "ClientWindow::toggleExpressionWindow" << endl;
+    for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it){
+	if(vis){
+	    it->second->plotWindow->show();
+	}else{
+	    it->second->plotWindow->hide();
+	}
+    }
 }
 
 void ClientWindow::toggleComparisonWindow(bool vis){
@@ -999,21 +1059,32 @@ void ClientWindow::toggleSavedWindow(bool vis){
   savedListWindow->hide();
 }
 
-void ClientWindow::newExptSelection(vector<int> v){
+void ClientWindow::newExptSelection(vector<int> v, int id){
   //cout << "ClientWindow::newExptSelection" << endl;
   client->selectedExperiments = v;
-  plotWindow->replot();
+  cout << "newExptSelection going through the plotWindows looking for one with id " << id << endl;
+  for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it){
+      cout << "and the id is " << id << endl;
+      if(id == it->first){
+	  it->second->experiments = v;
+	  it->second->plotWindow->replot();
+      }
+  }
   meanPlotWindow->collectData();
   // and tell all the clients that need to know that 
   // the exptSelection has changed..
 }
 
-void ClientWindow::newMarkSelection(vector<int> v){
-  markedExperiments = v;
-  plotWindow->replot();
-  meanPlotWindow->collectData();
+void ClientWindow::newMarkSelection(vector<int> v, int id){
+    markedExperiments = v;
+    for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it){
+	if(id == it->first){
+	    it->second->markedExperiments = v;
+	    it->second->plotWindow->replot();
+	}
+	meanPlotWindow->collectData();
+    }
 }
-
 
 void ClientWindow::writeHtmlReport(){
   cout << "ClientWindow::writeHtmlReport" << endl;
@@ -1062,8 +1133,10 @@ void ClientWindow::writeHtmlReport(){
     pmRaw.fill();
     QPainter p(&pm);
     QPainter p2(&pmRaw);
-    plotWindow->plot(&(*lit)->mySet, &p, false);
-    plotWindow->plot(&(*lit)->mySet, &p2, true);
+    cout << "FUNCTION TEMPORARILY DISABLED. NO PLOT WILL BE MADE SINCE THE INTERNAL STRUCTURE OF PLOTWINDOWS HAS BEEN CHANGED" << endl;
+//    plotWindow->plot(&(*lit)->mySet, &p, false);
+    //  plotWindow->plot(&(*lit)->mySet, &p2, true);
+
     //    plotWindow->plot(&savedOnes[i]->mySet, &p, false);
     p.end();
     QString fileName((*lit)->myData.afid.c_str());
@@ -1200,8 +1273,9 @@ void ClientWindow::writeCurrentProbeSet(writeRequest* wr){
   QPainter p(&pm);
   QPainter p2(&pmRaw);
   cout << "write Current probe set, and pixmap is large .. " << endl;
-  plotWindow->plot(&client->pSet, &p, false);
-  plotWindow->plot(&client->pSet, &p2, true);
+  cout << "write Current probet set: TEMPORARILY DISABLED DUE TO CHANGE IN PLOTWINDOW ARRANGEMENTS" << endl;
+//  plotWindow->plot(&client->pSet, &p, false);
+//  plotWindow->plot(&client->pSet, &p2, true);
   QString f1(client->pData.afid.c_str());
   f1.append(".jpg");
   QString f2 = f1;
@@ -1264,6 +1338,12 @@ void ClientWindow::exportMeans(){
 
 void ClientWindow::selectFont(){
   qApp->setFont( QFontDialog::getFont( 0, qApp->font() ), true );
+}
+
+void ClientWindow::setPenWidth(int w){
+    for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it)
+	it->second->plotWindow->setPenWidth(w);
+    meanPlotWindow->setPenWidth(w);
 }
   
 void ClientWindow::newExptDistances(exptDistanceInfo data){
@@ -1515,7 +1595,8 @@ void ClientWindow::receiveProtocolCollection(int requester, int requestId, Proto
 }
 
 void ClientWindow::setCoordinates(vector<PointCoordinate> pts){
-  plotWindow->setCoordinates(pts);
+    for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it)
+	it->second->plotWindow->setCoordinates(pts);
   cout << "Client Window ..  SET COORDINATES..  should do something to cause some trouble somewhere.. " << endl;
 }
 
