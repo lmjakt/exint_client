@@ -46,11 +46,13 @@ class PlotWindow : public QWidget
   Q_OBJECT
     public:
   PlotWindow(vector<int>* es, vector<int>* me, int id, QWidget* parent=0, const char* name=0);
+  bool isActive();
   
   public slots:
   void plot(probe_set* pset);   // pass as pointer rather than reference so I don't forget!
   void plot(probe_set* pset, QPainter* p, bool rawData);   // for plotting somewhere else.. 
   void plot();
+  void inspectProbeData(probe_data p_data);
   void setPenWidth(int);     // just for passing the message on.. 
   void replot();
   void setCoordinates(vector<PointCoordinate> pts);
@@ -66,6 +68,7 @@ class PlotWindow : public QWidget
 
  private:
   bool hasData;
+  bool active;
   int plotId;
   ExpressionPlotter* raw;
 //  ExpressionPlotter* norm;
@@ -76,6 +79,8 @@ class PlotWindow : public QWidget
   vector<int>* exptSelection;   // vector defined and manipulated elsewhere, be careful!!
   vector<int>* markedExperiments;   // vector defined and manipulated elsewhere, be careful!!
   probe_set p;   // dangerous. hmm. -- I guess less dangerous.. 
+  probe_set plotted_pset;  // the one that we've actually plotted
+  probe_data pd; // tries to work out if we are in sync on the gene level, and so on.. 
   float probePairThreshold;
 
   PSDialog* exportDialog;

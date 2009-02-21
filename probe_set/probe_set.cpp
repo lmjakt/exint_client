@@ -70,6 +70,7 @@ vitalStatistics::vitalStatistics(){
 }
 
 probe_set::probe_set(){
+    index = -1;
 }
 
 probe_set::probe_set(int i){
@@ -1122,7 +1123,8 @@ annotationInformation::annotationInformation(int i, int o, string a, vector<int>
 
 
 probe_data::probe_data(){   // is this really necessary ?
-  defined = false;
+    index = -1;
+    defined = false;
 } 
 
 probe_data::~probe_data(){   // and what about this??? 

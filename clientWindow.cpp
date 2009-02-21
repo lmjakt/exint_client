@@ -649,58 +649,6 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
 
   vbox->addWidget(chipChooser);
 
-//    vbox->addWidget(reConnect);
-
-//    QGridLayout* bGrid = new QGridLayout(this, 1, 5, 2, 1);
-
-//    QVBoxLayout* lb1 = new QVBoxLayout(0);
-//    QVBoxLayout* lb2 = new QVBoxLayout(0);
-//    QVBoxLayout* an = new QVBoxLayout(0);
-//    QVBoxLayout* sb = new QVBoxLayout(0);
-//    QVBoxLayout* db = new QVBoxLayout(0);
-
-//    bGrid->addLayout(lb1, 0, 0);
-//    bGrid->addLayout(lb2, 0, 1);
-//    bGrid->addLayout(an, 0, 2);
-//    bGrid->addLayout(sb, 0, 3);
-//    bGrid->addLayout(db, 0, 4);
-  
-//    // and lets add the buttons to lb1, -- window buttons 1,,
-//    lb1->addWidget(rawData);
-//    lb1->addWidget(meanData);
-//    lb1->addWidget(probeData);
-//    lb1->addWidget(comparisons);
-//    lb1->addWidget(experimentChoices);
-//    lb1->addStretch();
-
-//    lb2->addWidget(showHistory);
-//    lb2->addWidget(showSaved);
-//    lb2->addWidget(showStats);
-//    lb2->addStretch();
-//    lb2->addWidget(passwdShow);
-
-//    an->addWidget(annotator);
-//    //  an->addWidget(messages);
-  
-//    sb->addWidget(anovaSort);
-//    sb->addWidget(compare);
-//    sb->addWidget(statCollection);
-//    sb->addStretch();
-//    sb->addWidget(saveState);
-//    sb->addWidget(readSavedState);
-//    sb->addWidget(writeHtmlRep);
-
-//    // and now for the difficult bits in db.. the databas thing.. 
-//    QHBoxLayout* db_1 = new QHBoxLayout();
-//    //QHBoxLayout* db_2 = new QHBoxLayout();
-//    db->addWidget(dbQuerier);
-//    db->addWidget(indexSize);
-//    db->addLayout(db_1);
-//    db_1->addWidget(lineWidth);
-//    db_1->addWidget(getProbe);
-//    db->addStretch();  // stretch at the top.. 
-//    db->addWidget(messages);
-  
   cout << "at the end of the clientwindow construction" << endl;
 
   //  comparisonWindow->setPalette(QPalette(QColor(110, 197, 209), QColor(184, 175, 198)));
@@ -928,7 +876,7 @@ void ClientWindow::newProbeData(probe_data* pd){
   }
   //////////// I wonder about the line below. It needs to be investigated. Should it be removed or it -> it++?
   if(reportRequests.size()){
-    for(set<writeRequest*>::iterator it=reportRequests.begin(); it != reportRequests.end(); it){
+    for(set<writeRequest*>::iterator it=reportRequests.begin(); it != reportRequests.end(); it++){
       if((*it)->indicesToWrite.count(pd->index)){
 	return;
       }
@@ -1124,6 +1072,18 @@ void ClientWindow::writeHtmlReport(){
   vector<QString> fileNames(0); 
   vector<QString> rawFileNames(0);
   list<ProbeSetWidget*>::iterator lit;
+
+  PlotWindow* plotter = 0;
+  for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it){
+      if(it->second->plotWindow->isActive()){
+	  plotter = it->second->plotWindow;
+	  break;
+      }
+  }
+  if(!plotter){
+      cerr << "WriteHtmlReport : no active plotter found. Giving up and returning without doing anything" << endl;
+      return;
+  }
   for(lit = savedOnes.begin(); lit != savedOnes.end(); lit++){
     //  for(int i=0; i < savedOnes.size(); i++){
     //if(savedOnes.size() > 0){
@@ -1133,9 +1093,8 @@ void ClientWindow::writeHtmlReport(){
     pmRaw.fill();
     QPainter p(&pm);
     QPainter p2(&pmRaw);
-    cout << "FUNCTION TEMPORARILY DISABLED. NO PLOT WILL BE MADE SINCE THE INTERNAL STRUCTURE OF PLOTWINDOWS HAS BEEN CHANGED" << endl;
-//    plotWindow->plot(&(*lit)->mySet, &p, false);
-    //  plotWindow->plot(&(*lit)->mySet, &p2, true);
+    plotter->plot(&(*lit)->mySet, &p, false);
+    plotter->plot(&(*lit)->mySet, &p2, true);
 
     //    plotWindow->plot(&savedOnes[i]->mySet, &p, false);
     p.end();
@@ -1272,8 +1231,14 @@ void ClientWindow::writeCurrentProbeSet(writeRequest* wr){
   pmRaw.fill();
   QPainter p(&pm);
   QPainter p2(&pmRaw);
-  cout << "write Current probe set, and pixmap is large .. " << endl;
-  cout << "write Current probet set: TEMPORARILY DISABLED DUE TO CHANGE IN PLOTWINDOW ARRANGEMENTS" << endl;
+  // determine which window to plot from
+  for(map<int, PlotSet*>::iterator it=plotWindows.begin(); it != plotWindows.end(); ++it){
+      if(it->second->plotWindow->isActive()){
+	  it->second->plotWindow->plot(&client->pSet, &p, false);
+	  it->second->plotWindow->plot(&client->pSet, &p2, true);
+	  break;
+      }
+  }
 //  plotWindow->plot(&client->pSet, &p, false);
 //  plotWindow->plot(&client->pSet, &p2, true);
   QString f1(client->pData.afid.c_str());

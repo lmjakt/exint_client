@@ -94,11 +94,11 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   connect(plotWindows, SIGNAL(clicked(int)), this, SIGNAL(changedActivePlotWindow(int)) );
   QLabel* plotWindowLabel = new QLabel("Active PlotWindow", this);
 
-  plotWindowButtons = new QGridLayout(1, 2);
+  plotWindowButtons = new QGridLayout(1, 3);
   plotWindowButtons->setColStretch(0, 2);
   base->addLayout(plotWindowButtons);
   plotWindowButtons->addWidget(plotWindowLabel, 0, 0);
-
+  plotWindowButtons->setColSpacing(2, 5);
   // and a button,,
   QPushButton* orderButton = new QPushButton("Set Order", this, "orderButton");
   connect(orderButton, SIGNAL(clicked()), orderChooser, SLOT(show()) );

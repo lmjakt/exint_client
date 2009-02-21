@@ -45,6 +45,7 @@ PlotWindow::PlotWindow(vector<int>* es, vector<int>* me, int id, QWidget* parent
     plotId = id;
     setCaption("Raw Data");
     hasData = false;
+    active = false;
     exptSelection = es;        // vector in client,, long way away, be careful, !!!.. 
     markedExperiments = me;
     probePairThreshold = 1;      // default.. 
@@ -129,6 +130,11 @@ void PlotWindow::plot(probe_set* pset){
 void PlotWindow::setActiveWindow(bool b){
     model->setActiveSelection(b);
     raw->setActiveSelection(b);
+    active = b;
+}
+
+bool PlotWindow::isActive(){
+    return(active);
 }
 
 void PlotWindow::plot(probe_set* pset, QPainter* p, bool rawData){
@@ -192,7 +198,7 @@ void PlotWindow::plot(){
       model->setUpToDate(false);
       return;
   }
-
+  
   //cout << "\tplot() function size of experiments: " << experiments.size() << endl;
   //vector< vector<float> > normValues = rawValues;
   vector< vector<float> > modelValues = rawValues;
@@ -233,7 +239,29 @@ void PlotWindow::plot(){
 //  cout << "glRaw done .. " << endl;
 
   posPlot->plot(modelValues, experimentIds, (*markedExperiments));
+  plotted_pset = p;
   cout << "position plot done .. " << endl;
+}
+
+/// brainless choice of variable names. Somebody shoot me.
+void PlotWindow::inspectProbeData(probe_data p_data){
+    // for now do nothing. I have to think of a better way of doing this.
+//     if(plotted_pset.index == -1)
+// 	return;
+//     if(p_data.index == pd.index)  // then we've already done what we should have done.. 
+// 	return;
+//     // simplest case scenario: plotted_pset is the same as the p_data recieved.. then set the p_data to 
+//     // something useful and tell the expression plotter something useful..
+//     if(p_data.index == plotted_pset.index){
+// 	pd = p_data;
+// 	// do_something();  // tell the expression plotter some string to plot and the current gene id (ensemblBlastGuess)
+// 	return;
+//     }
+//     // If we get here then the p_data information refers to a new probe set. However, that probe set might
+//     // encode the same gene. 
+//     // simply tell the plotter the id of the new gene. If that is different from the one set, then indicate this in
+//     // some resonable manner...
+    
 }
 
 void PlotWindow::setPenWidth(int n){

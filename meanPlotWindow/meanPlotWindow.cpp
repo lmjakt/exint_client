@@ -69,13 +69,11 @@ void MeanPlotWindow::toggleProbeSet(ProbeSetWidget* pset, bool insert){
 }
 
 void MeanPlotWindow::addProbeSet(ProbeSetWidget* pset){
-  cout << "this is in the addProbeSet function.. " << endl; 
   if(pSets.count(pset) > 0){ 
     cout << " Am returning, because this has already been inserted, so there's no point in doing again" << endl;
     return; 
   }    // don't insert it if its already there. 
   pSets.insert(pset);
-  cout << "did insert into pset,, what happened? " << endl; 
   if(!dontUpdatePlot){
     collectData();
   }
@@ -85,55 +83,63 @@ void MeanPlotWindow::addProbeSet(ProbeSetWidget* pset){
 void MeanPlotWindow::collectData(){
   // set the appropriate values in rawMeans, normMeans, exptIndices, for all the current genes..
   // go through all of the genes, and create the appropriate things..
-  if(pSets.size() < 1) { return; }
-  if((*exptSelection).size() < 2) { return; }
-  set<ProbeSetWidget*>::iterator it;
-  map<int, int>::iterator eit;
-  rawMeans.resize(0);
-  normMeans.resize(0);
-  exptIndices.resize(0);
-  keys.resize(0);
-
-  for(it = pSets.begin(); it != pSets.end(); it++){
-    QString key;
-    for(int i=0; i < (*it)->myData.ugData.size(); i++){
-	if((*it)->myData.ugData[i].gene.length() && (*it)->myData.ugData[i].gene != "undeffed"){
-	    key.append((*it)->myData.ugData[i].gene.c_str());
-	    key.append(" ");
+    if(pSets.size() < 1) { return; }
+    if((*exptSelection).size() < 2) { return; }
+    set<ProbeSetWidget*>::iterator it;
+    map<int, int>::iterator eit;
+    rawMeans.resize(0);
+    normMeans.resize(0);
+    exptIndices.resize(0);
+    keys.resize(0);
+    
+    for(it = pSets.begin(); it != pSets.end(); it++){
+	QString key;
+	for(int i=0; i < (*it)->myData.ugData.size(); i++){
+	    if((*it)->myData.ugData[i].gene.length() && (*it)->myData.ugData[i].gene != "undeffed"){
+		key.append((*it)->myData.ugData[i].gene.c_str());
+		key.append(" ");
+	    }
+	}
+	key.append((*it)->myData.afid.c_str());
+	keys.push_back(key);
+	vector<float> raw;    // temp vector that contains the means of the raw values 
+	vector< vector<float> > rawSelection((*it)->mySet.probes.size()); 
+	vector<int> tempIndices;
+	for(int i=0; i < (*exptSelection).size(); i++){
+	    //cout << "\t i: " << (*exptSelection)[i] << endl;
+	    eit = (*it)->mySet.exptLookup.find((*exptSelection)[i]);
+	    if(eit != (*it)->mySet.exptLookup.end()){
+		raw.push_back((*it)->mySet.mean[(*eit).second]);
+		tempIndices.push_back((*exptSelection)[i]);
+		for(int j=0; j < (*it)->mySet.probes.size(); j++){
+		    rawSelection[j].push_back((*it)->mySet.probes[j][(*eit).second]);
+		}
+	    }
+	}
+	//////// Now we have collected all we need for one gene. push back, rawMeans, exptIndices
+	//////// and do the zScore for the norm.. 
+	// Only do if raw has some size otherwise avoid
+	vector<float> blankVector;
+	if(raw.size() > 1){        // larger than 1, to avoid issues with the zScore function
+	    rawMeans.push_back(raw);
+	    exptIndices.push_back(tempIndices);
+	    vector<float> tempMeans(raw.size(), 0);
+	    for(int i=0; i < rawSelection.size(); i++){
+		zScore(rawSelection[i]);
+		for(int j=0; j < rawSelection[i].size(); j++){
+		    tempMeans[j] += rawSelection[i][j];
+		}
+	    }
+	    for(int i=0; i < tempMeans.size(); i++) { tempMeans[i] = tempMeans[i]/rawSelection.size(); }
+	    normMeans.push_back(tempMeans);
+	}else{
+	    exptIndices.push_back(tempIndices);
+	    rawMeans.push_back(blankVector);
+	    normMeans.push_back(blankVector);
 	}
     }
-    key.append((*it)->myData.afid.c_str());
-    keys.push_back(key);
-    vector<float> raw;    // temp vector
-    vector< vector<float> > rawSelection((*it)->mySet.probes.size()); 
-    vector<int> tempIndices;
-    for(int i=0; i < (*exptSelection).size(); i++){
-      //cout << "\t i: " << (*exptSelection)[i] << endl;
-      eit = (*it)->mySet.exptLookup.find((*exptSelection)[i]);
-      if(eit != (*it)->mySet.exptLookup.end()){
-	raw.push_back((*it)->mySet.mean[(*eit).second]);
-	tempIndices.push_back((*exptSelection)[i]);
-	for(int j=0; j < (*it)->mySet.probes.size(); j++){
-	  rawSelection[j].push_back((*it)->mySet.probes[j][(*eit).second]);
-	}
-      }
-    }
-    //////// Now we have collected all we need for one gene. push back, rawMeans, exptIndices
-    //////// and do the zScore for the norm.. 
-    rawMeans.push_back(raw);
-    exptIndices.push_back(tempIndices);
-    vector<float> tempMeans(raw.size(), 0);
-    for(int i=0; i < rawSelection.size(); i++){
-      zScore(rawSelection[i]);
-      for(int j=0; j < rawSelection[i].size(); j++){
-	tempMeans[j] += rawSelection[i][j];
-      }
-    }
-    for(int i=0; i < tempMeans.size(); i++) { tempMeans[i] = tempMeans[i]/rawSelection.size(); }
-    normMeans.push_back(tempMeans);
-  }
-  /////////////// pheww,, done.. now just send to the plotter..
-  drawStuff();
+    /////////////// pheww,, done.. now just send to the plotter..
+    drawStuff();
 }
 
 void MeanPlotWindow::removeProbeSet(ProbeSetWidget* pset){
@@ -154,10 +160,9 @@ void MeanPlotWindow::removeProbeSet(ProbeSetWidget* pset){
 void MeanPlotWindow::drawStuff(){
   // roll up the data into a reasonable data format and send it to the plotter...
   // ho yeahh.
-
-  raw->paintLines(rawMeans, exptIndices, eMap);
-  norm->paintLines(normMeans, exptIndices, eMap);
-  keyWindow->paintKeys(keys);
+    raw->paintLines(rawMeans, exptIndices, eMap);
+    norm->paintLines(normMeans, exptIndices, eMap);
+    keyWindow->paintKeys(keys);
 }
   
 

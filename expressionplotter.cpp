@@ -41,9 +41,7 @@ ExpressionPlotter::ExpressionPlotter(PlotType pt, QWidget *parent, const char* n
   : QWidget(parent, name)
 {
   //  setCaption("Raw Expression");
-  cout << "at the beginning of Expression Plotter" << endl;
   plotType = pt;
-//  setMouseTracking(true);
   currentExperiment = -1;
   pixmap = new QPixmap(size());
   resize(300, 300);
@@ -81,12 +79,9 @@ void ExpressionPlotter::paintEvent(QPaintEvent *e){
 
 void ExpressionPlotter::paintLines(vector< vector<float> >& v, vector<int>& exIndex, vector<int>& marks, vector<float>& devs){
   values = v;
-  cout << "Expression Plotter : values size " << values.size() << endl;
   exptIndex = exIndex;
   markedOnes = marks;
-  cout << "before setting minmax.. " << endl;
   setMinMax(v);
-  cout << "min max set " << endl;
   devsFromMean = devs;
   hasData = true;
   upToDate = true;
@@ -105,22 +100,17 @@ void ExpressionPlotter::setActiveSelection(bool b){
 
 void ExpressionPlotter::paintLines(){
   // private function, only called by paintEvent,,
-  cout << "paint lines,, " << endl;
+
   xo = 20;
   yo = 20;
   rxo = 50;
   int w = width()-2*xo-rxo;
   int h = height()-2*yo;
-  //if(pixmap){
-  //  delete pixmap;
-  //  pixmap = 0;
-  //}
+
   if(!width() || !height()){
       return;
   }
   pixmap->resize(size());
-  //  pixmap = new QPixmap(width(), height());
-  //  QPixmap pix(width(), height());
   if(pixmap->isNull()){
       cerr << "pixmap is null can't paint, try again" << endl;
       return;
@@ -130,15 +120,15 @@ void ExpressionPlotter::paintLines(){
   }else{
       pixmap->fill(QColor(200, 200, 200));
   }
-  //pixmap->fill(this, QPoint(0, 0));
+
   QPainter* p = new QPainter(pixmap);
   cout << "calling paintLines .. " << endl;
-  p->begin(pixmap);
+  //p->begin(pixmap);
   paintLines(p, w, h);
-  p->end();
-  p->begin(this);
+  //p->end();
+  //p->begin(this);
   bitBlt(this, 0, 0, pixmap, 0, 0, width(), height());
-  //  p->drawPixmap(0, 0, *pixmap);   // change to bitblt,, 
+
   delete p;
   cout << "end of plot lines thingy, now what ? " << endl;
 }
@@ -175,13 +165,8 @@ void ExpressionPlotter::paintLines(QPainter* p, int w, int h){
   }
 
   // draw some vertical lines.. and some labels..
-  //  p->setFont(QFont("helvetica", 8));
-  //cout << "Application font is : " << qApp->font().family() << "\t" << qApp->font().pointSize() << endl;
-//  int fontsize = font().pointSize()-1;
-  //  int fontsize = qApp->font().pointSize()-1;
-//  p->setFont(QFont(font().family(), fontsize));
   p->setFont(font());
-  cout << "Set the painter to have a font of " << font().family() << " : "  << font().pointSize() << endl;
+//  cout << "Set the painter to have a font of " << font().family() << " : "  << font().pointSize() << endl;
   QString tick_label;
 
   // First draw any marked lines that need to be drawn, so that the marks are in the background. 
@@ -195,8 +180,8 @@ void ExpressionPlotter::paintLines(QPainter* p, int w, int h){
 
   tick_label.setNum(exptIndex.back());
   QRect brect = p->boundingRect(0, 0, 50, 50, Qt::AlignLeft|Qt::AlignBottom, tick_label);
-  cout << "BOUNDING RECTANGLE HAS WIDTH : " << brect.width() << " height : " << brect.height() << " for a number " << exptIndex.back() << endl;
-  cout << " and the space for the thingy is : " << ( (w - (rxo + 2 * xo)) / (exptIndex.size() - 1) ) << endl;
+//  cout << "BOUNDING RECTANGLE HAS WIDTH : " << brect.width() << " height : " << brect.height() << " for a number " << exptIndex.back() << endl;
+//  cout << " and the space for the thingy is : " << ( (w - (rxo + 2 * xo)) / (exptIndex.size() - 1) ) << endl;
 
   bool drawXLabels = (brect.width() - 4)  < ( (w - (rxo + 2 * xo)) / (exptIndex.size() - 1) );
 
@@ -261,94 +246,98 @@ void ExpressionPlotter::paintLines(QPainter* p, int w, int h){
 }
 
 void ExpressionPlotter::paintLines(QPainter* p, vector< vector<float> >& v, vector<int>& exIndex){
-  // first find out the w and h from the QPaintDevice.. -assume that this is a QPixmap.. 
-  QPixmap* pd = (QPixmap*)p->device();
-  //  int w = width()-2*xo-rxo;
-  //int h = height()-2*yo;
-  int w = pd->width()-2*xo-rxo;
-  int h = pd->height()-2*yo;    // should work, but I suppose it will crash if it's wrong.. 
-
-  cout << endl << "\t\tPaintLines : w " << w << "\th " << h << endl;
-  int ticknumber = 5;
-
-  p->setPen(QPen(QColor(200, 0, 0), penWidth));
-  int x1, x2, y1, y2, y;
-  // need to find the max and min values in v,, hmm. maybe I can't use the built in function.. as this will screw things up
-  float lmaxV = v[0][0];
-  float lminV = v[0][0];               // l for local.. 
-  for(uint i=0; i < v.size(); i++){
-    for(uint j=0; j < v[i].size(); j++){
-      if(v[i][j] < lminV) { lminV = v[i][j]; }
-      if(v[i][j] > lmaxV) { lmaxV = v[i][j]; }
+    // first find out the w and h from the QPaintDevice.. -assume that this is a QPixmap.. 
+    QPixmap* pd = (QPixmap*)p->device();
+    int w = pd->width()-2*xo-rxo;
+    int h = pd->height()-2*yo;    // should work, but I suppose it will crash if it's wrong.. 
+    
+//  cout << endl << "\t\tPaintLines : w " << w << "\th " << h << endl;
+    int ticknumber = 5;
+    
+    p->setPen(QPen(QColor(200, 0, 0), penWidth));
+    int x1, x2, y1, y2, y;
+    // need to find the max and min values in v,, hmm. maybe I can't use the built in function.. as this will screw things up
+    
+    float lmaxV = 1.0;
+    float lminV = 0.0;               // l for local.. 
+    for(uint i=0; i < v.size(); i++){
+	if(!v[i].size())
+	    continue;
+	lmaxV = v[i][0];
+	lminV = v[i][0];
+	break;
     }
-  }
-
-  float range = lmaxV - lminV;
-  float fh = (float)h;
-
-  if(exIndex.size() != v[0].size()){
-    emit plotterStatusMessage(QString("exptIndex size is different from values[0] size. Can't really draw!!"));
-    return;
-  }
-
-  // draw some vertical lines.. and some labels..
-//  p->setFont(QFont("Arial", 7));
-  //  p->setFont(QFont("helvetica", 8));
-  p->setFont(font());
-  QString tick_label;
-  //p.setPen(QPen(QColor(150, 150, 150), 0, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
-  p->setPen(QPen(QColor(0, 0, 0), 0, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
-  // first check how much space is required to print the highest value..
-
-  tick_label.setNum(exIndex[0]);
-  p->drawText(rxo + xo - 10, yo+h+4, 20, 10, AlignCenter, tick_label);
-
-  for(uint i=1; i < exIndex.size(); i++){
-    int x = rxo + xo + (i*w)/(exIndex.size()-1);
-    p->setPen(QPen(QColor(150, 150, 150), 0, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
-    p->drawLine(x, yo+h, x, yo);
-    tick_label.setNum(exIndex[i]);
+    
+    for(uint i=0; i < v.size(); i++){
+	for(uint j=0; j < v[i].size(); j++){
+	    if(v[i][j] < lminV) { lminV = v[i][j]; }
+	    if(v[i][j] > lmaxV) { lmaxV = v[i][j]; }
+	}
+    }
+    
+    float range = lmaxV - lminV;
+    float fh = (float)h;
+    
+    if(exIndex.size() != v[0].size()){
+	emit plotterStatusMessage(QString("exptIndex size is different from values[0] size. Can't really draw!!"));
+	return;
+    }
+    
+    // draw some vertical lines.. and some labels..
+    p->setFont(font());
+    QString tick_label;
     p->setPen(QPen(QColor(0, 0, 0), 0, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
-    p->drawText(x-10, yo+h+4, 20, 10, AlignCenter, tick_label);
-  }
-  p->setPen(QPen(QColor(0, 0, 0), penWidth, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
-
-  // lets draw an x -axis..
-  y = yo+h - (int)((0-lminV)*fh/range);
-  cout << "\tx-axis y value : " << y << endl;
-  p->drawLine(rxo + xo, y, rxo+xo+w, y);
-  // and a y -axis
-  p->drawLine(rxo+xo, yo+h, rxo+xo, yo);  // should be.. 
-  // some labels and ticks..
-
-  float tick_value;
-  for(int i=0; i <= ticknumber; i++){
-    tick_value = i*(range/ticknumber);
-    tick_label.sprintf("%1.1e", tick_value+lminV);
-    y = yo+h - (int)((tick_value)*fh/range);
-    p->drawText(xo-2, y-8, rxo, 16, AlignRight, tick_label);
-    p->drawLine(rxo+xo, y, rxo+xo+10, y);
-  }
-
-  for(uint i=0; i < v.size(); i++){
-    int mx = v[i].size()-1;
-    p->setPen(QPen(*colours[i % colours.size()], penWidth, PenStyle(SolidLine), PenCapStyle(RoundCap), PenJoinStyle(MiterJoin)));
-    //    p.setPen(QPen(*colours[i % colours.size()], penWidth));
-    for(uint j=0; j < v[i].size()-1; j++){
-      x1 = rxo+xo + (j*w)/mx;
-      x2 = rxo+xo + ((j+1)*w)/mx;
-      y1 = yo+h - (int)((v[i][j]-lminV)*fh/range);
-      y2 = yo+h - (int)((v[i][j+1]-lminV)*fh/range);
-      p->drawLine(x1, y1, x2, y2);
+    // first check how much space is required to print the highest value..
+    
+    tick_label.setNum(exIndex[0]);
+    p->drawText(rxo + xo - 10, yo+h+4, 20, 10, AlignCenter, tick_label);
+    
+    for(uint i=1; i < exIndex.size(); i++){
+	int x = rxo + xo + (i*w)/(exIndex.size()-1);
+	p->setPen(QPen(QColor(150, 150, 150), 0, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
+	p->drawLine(x, yo+h, x, yo);
+	tick_label.setNum(exIndex[i]);
+	p->setPen(QPen(QColor(0, 0, 0), 0, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
+	p->drawText(x-10, yo+h+4, 20, 10, AlignCenter, tick_label);
     }
-  }
-  // lets draw a thin white lint on top of the x-axis
-  p->setPen(QPen(QColor(255, 255, 255), 0));
-  y = yo+h - (int)((0-lminV)*fh/range);  
-  p->drawLine(rxo+xo, y, rxo+xo+w, y);
-  //  p.end();
-  //p.begin(this);
-  //p.drawPixmap(0, 0, pix);
+    p->setPen(QPen(QColor(0, 0, 0), penWidth, PenStyle(SolidLine), PenCapStyle(SquareCap), PenJoinStyle(MiterJoin)));
+    
+    // lets draw an x -axis..
+    y = yo+h - (int)((0-lminV)*fh/range);
+    //cout << "\tx-axis y value : " << y << endl;
+    p->drawLine(rxo + xo, y, rxo+xo+w, y);
+    // and a y -axis
+    p->drawLine(rxo+xo, yo+h, rxo+xo, yo);  // should be.. 
+    // some labels and ticks..
+    
+    float tick_value;
+    for(int i=0; i <= ticknumber; i++){
+	tick_value = i*(range/ticknumber);
+	tick_label.sprintf("%1.1e", tick_value+lminV);
+	y = yo+h - (int)((tick_value)*fh/range);
+	p->drawText(xo-2, y-8, rxo, 16, AlignRight, tick_label);
+	p->drawLine(rxo+xo, y, rxo+xo+10, y);
+    }
+    
+    for(uint i=0; i < v.size(); i++){
+	int mx = v[i].size()-1;
+	p->setPen(QPen(*colours[i % colours.size()], penWidth, PenStyle(SolidLine), PenCapStyle(RoundCap), PenJoinStyle(MiterJoin)));
+	//    p.setPen(QPen(*colours[i % colours.size()], penWidth));
+	for(uint j=0; j < v[i].size()-1; j++){
+	    x1 = rxo+xo + (j*w)/mx;
+	    x2 = rxo+xo + ((j+1)*w)/mx;
+	    y1 = yo+h - (int)((v[i][j]-lminV)*fh/range);
+	    y2 = yo+h - (int)((v[i][j+1]-lminV)*fh/range);
+	    p->drawLine(x1, y1, x2, y2);
+	}
+    }
+    // lets draw a thin white lint on top of the x-axis
+    p->setPen(QPen(QColor(255, 255, 255), 0));
+    y = yo+h - (int)((0-lminV)*fh/range);  
+    p->drawLine(rxo+xo, y, rxo+xo+w, y);
+    //  p.end();
+    //p.begin(this);
+    //p.drawPixmap(0, 0, pix);
 }
 
 void ExpressionPlotter::setMinMax(vector< vector<float> >& v){
