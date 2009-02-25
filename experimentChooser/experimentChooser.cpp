@@ -98,7 +98,8 @@ ExperimentChooser::ExperimentChooser(QWidget* parent, const char* name) :
   plotWindowButtons->setColStretch(0, 2);
   base->addLayout(plotWindowButtons);
   plotWindowButtons->addWidget(plotWindowLabel, 0, 0);
-  plotWindowButtons->setColSpacing(2, 5);
+  plotWindowButtons->addColSpacing(2, 5);
+  plotWindowButtons->addColSpacing(1, 40);
   // and a button,,
   QPushButton* orderButton = new QPushButton("Set Order", this, "orderButton");
   connect(orderButton, SIGNAL(clicked()), orderChooser, SLOT(show()) );
