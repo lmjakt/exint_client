@@ -28,6 +28,7 @@
 #include <qcolor.h>
 #include <qtextstream.h>
 #include <qcursor.h>
+#include <stdlib.h>
 
 using namespace std;
 

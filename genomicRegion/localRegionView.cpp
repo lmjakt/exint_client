@@ -37,6 +37,7 @@
 #include <qtextbrowser.h>
 #include <qpushbutton.h>
 #include <map>
+#include <stdlib.h>
 
 using namespace std;
 

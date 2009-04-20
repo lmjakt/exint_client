@@ -44,6 +44,7 @@
 #include <qcstring.h>
 #include <qfile.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef Q_WS_WIN
 #include <winsock.h>

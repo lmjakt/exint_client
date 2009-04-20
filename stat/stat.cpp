@@ -30,10 +30,8 @@
 #include "stat.h"
 #include <iostream>
 #include <stdlib.h>
+#include <algorithm>
 
-#ifdef Q_OS_LINUX
-#include <algo.h>   
-#endif
 
 using namespace std;
 
