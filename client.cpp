@@ -3144,7 +3144,7 @@ void Client::commitProtocolToDB(Protocol* protocol){
   QString cleanDescription = protocol->description.c_str();
   cleanText2(cleanName, "\\|");
   cleanText2(cleanDescription, "\\|");
-  *t << "<commitProtocolToDB>" << (int)protocol << "|"         // so that we can have some sort of identifier.. for acknowledgment purposes.. 
+  *t << "<commitProtocolToDB>" << (int)(long)protocol << "|"         // so that we can have some sort of identifier.. for acknowledgment purposes.. 
      << protocol->parentId << "|"
      << cleanName << "|" << cleanDescription << "|"
      << protocol->steps.size() << "|";

@@ -337,7 +337,7 @@ struct ishFloatInsert {
   ishFloatInsert(QString fn, float v, bool n=false){
     ishProbeId = 0;
     //////// The next is problematic on 64 bit systems. All I wanted is a unique id.
-    id = (int)this;
+    id = (int)(long)this;
     errorNo = 0;
     errorString = "";
     fieldName = fn;
@@ -367,7 +367,7 @@ struct ishTextInsert {
   int ishProbeId;     // --- how could I forget.. 
   
   ishTextInsert(QString fn, QString a, bool n=false){    // the annotation widget may not need to know the ishprobeid, ..
-    id = (int)this;
+    id = (int)(long)this;
     errorNo = 0;
     errorString = "";
     fieldName = fn;

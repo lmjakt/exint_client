@@ -35,7 +35,7 @@ ExperimentMaker::ExperimentMaker(const int* myId, map<int, userInformation>* uIn
 {
   // set up the things..
   setCaption("Experiment Maker");
-  requestId = (int)this;
+  requestId = (int)(long)this;
   
   descriptionView->setReadOnly(true);
   

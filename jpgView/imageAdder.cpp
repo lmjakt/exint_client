@@ -351,7 +351,7 @@ void ImageAdder::commitToDB(){              // gather the data, then emit signal
   }
   tissueIndex = (*it).second; 
   // and then we can just make the thingy and emit it.. 
-  unsigned int identifier = (unsigned int)this;
+  unsigned int identifier = (unsigned int)(long)this;
   ishImageSet imageSet(imageViewer->imagePointer(), currentProbe.probeId, promoterChooser->currentText(), currentExperiment.id, tissueIndex, item->text(0), comments, identifier); 
   //  ishImageSet imageSet(imageViewer->imagePointer(), currentProbe.probeId, promoterChooser->currentText(), currentExperiment.id, tissueIndex, item->text(0), fieldIndex, commentArea->text()); 
   emit commitImageToDB(imageSet);
@@ -373,7 +373,7 @@ void ImageAdder::newComment(){
 }
 
 void ImageAdder::newStatus(StatusMessage message){
-  if(message.id == (unsigned int)this){
+  if(message.id == (unsigned int)(long)this){
     commitButton->setEnabled(true);
     cout << "We have received notifciation of the insert " << endl;
     timer->stop();
@@ -423,7 +423,7 @@ void ImageAdder::newStatus(StatusMessage message){
       QMessageBox::information(this, "Image Adder", errorMessage, "Cancel", 0);
     }
   }else{
-    cout << "This is the wrong message id, id is : " << message.id << "  and our address is " << (unsigned int)this << endl;
+    cout << "This is the wrong message id, id is : " << message.id << "  and our address is " << (unsigned int)(long)this << endl;
   }
 }
 

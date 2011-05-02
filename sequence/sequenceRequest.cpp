@@ -68,7 +68,7 @@ SequenceRequest::SequenceRequest(set<int> psets, set<int> tscripts, set<int> pep
   peptideRequests = peps;
   genomeRequests = gmr;
 
-  id = (int)this; // should be unique for this machine !!
+  id = (int)(long)this; // should be unique for this machine !!
   displayOnly = display;
    // that's really all I do. I rather let the client object work out how to send all the requests, 
   // as that is its job, -i.e. working out the interface with the server. I suppose we could have 
@@ -81,7 +81,7 @@ SequenceRequest::SequenceRequest(set<int> psets, set<int> tscripts, set<genomicR
   transcriptRequests = tscripts;
   genomeRequests = gmr;
 
-  id = (int)this; // should be unique for this machine !!
+  id = (int)(long)this; // should be unique for this machine !!
   displayOnly = display;
    // that's really all I do. I rather let the client object work out how to send all the requests, 
   // as that is its job, -i.e. working out the interface with the server. I suppose we could have 

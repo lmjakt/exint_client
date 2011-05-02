@@ -122,7 +122,7 @@ char ByteVec::c(){
 
 int ByteVec::qi(){
   //  Q_INT32 value = 0;
-  int value;
+  int value = -1;
   if(currentPosition + 3 < curSize){
     value = *(int*)(data + currentPosition);
     currentPosition += 4;
