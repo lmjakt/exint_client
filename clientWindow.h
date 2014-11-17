@@ -144,7 +144,9 @@ class ClientWindow : public QWidget
   void writeCurrentProbeSet(writeRequest* wr);   // write current probe set to the thing in outfile.. 
   void exportMeans();                            // request the server to export the means for the currently selected set of experiments and indices.. 
 
-  void selectFont();                             // select a font for the application.. 
+  void selectFont();
+  void setFontSize(int fs);
+
   void setPenWidth(int w); 
 
   //// mapping experimental distances to a n-d surface..

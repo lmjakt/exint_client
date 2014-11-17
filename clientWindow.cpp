@@ -136,6 +136,7 @@ ClientWindow::ClientWindow(QWidget* parent, const char* name) :
 	// can't use a case on this, so lots of if statements, ugly, but..
 	if(key == "port"){ portString = value.c_str();	}
 	if(key == "serverAddress") { serverName = value.c_str(); }
+	if(key == "fontSize") { setFontSize( atoi(value.c_str()) ); }
       }
     }
   }
@@ -1303,6 +1304,13 @@ void ClientWindow::exportMeans(){
 
 void ClientWindow::selectFont(){
   qApp->setFont( QFontDialog::getFont( 0, qApp->font() ), true );
+}
+
+void ClientWindow::setFontSize(int fs){
+  QFont f = qApp->font();
+  f.setPointSize(fs);
+  qApp->setFont( f );
+  setFont( f );
 }
 
 void ClientWindow::setPenWidth(int w){
