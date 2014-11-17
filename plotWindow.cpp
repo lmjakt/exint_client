@@ -319,7 +319,9 @@ void PlotWindow::exportPS(QString fname, ExpressionPlotter::PlotType type, int w
 //    QPrinter printer(QPrinter::HighResolution);   // which sets it to screen resolution
     printer.setColorMode(QPrinter::Color);
     printer.setOrientation(QPrinter::Landscape);
-    printer.setPageSize(QPrinter::B0);
+    //    printer.setPageSize(QPrinter::B0);
+    printer.setPageSize(QPrinter::Custom);
+    printer.setup();
     printer.setOutputFileName(fname);
     QPainter p(&printer);
     // then simply make a QPainter and paint to that one..
